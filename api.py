@@ -34,9 +34,9 @@ def get_scores_onu():
 @app.post("/add_score_europe")
 def add_score_europe(score: classes.Score):
   conn = bdd.create_connection(database)
-  bdd.create_score_europe(conn, score.temps, score.joueur)
+  bdd.create_score_europe(conn, score.temps, score.erreurs, score.joueur)
 
 @app.post("/add_score_onu")
 def add_score_onu(score: classes.Score):
   conn = bdd.create_connection(database)
-  bdd.create_score_onu(conn, score.temps, score.joueur)
+  bdd.create_score_onu(conn, score.temps, score.erreurs, score.joueur)
