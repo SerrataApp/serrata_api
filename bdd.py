@@ -22,7 +22,7 @@ def create_score_europe(conn, temps, erreurs, joueur):
   cur = conn.cursor()
   cur.execute(sql)
   idMax = cur.fetchall()[0][0]
-  data = (temps, joueur)
+  data = (temps, erreurs, joueur)
   if(idMax == None):
     sql = "INSERT INTO ScoresEurope (idScore, temps, erreurs, joueur) VALUES (1, ?, ?, ?)"
   else:
@@ -38,7 +38,7 @@ def create_score_onu(conn, temps, erreurs, joueur):
   cur = conn.cursor()
   cur.execute(sql)
   idMax = cur.fetchall()[0][0]
-  data = (temps, joueur)
+  data = (temps, erreurs, joueur)
   if(idMax == None):
     sql = "INSERT INTO ScoresOnu (idScore, temps, erreurs, joueur) VALUES (1, ?, ?, ?)"
   else:
