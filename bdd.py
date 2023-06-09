@@ -17,45 +17,47 @@ def create_table(conn, create_table_sql):
   except Error as e:
     print(e)
 
-def create_score_europe(conn, score, joueur):
-  sql = "SELECT MAX(id) FROM ScoresEurope;"
+def create_score_europe(conn, temps, joueur):
+  sql = "SELECT MAX(idScore) FROM ScoresEurope;"
   cur = conn.cursor()
   cur.execute(sql)
   idMax = cur.fetchall()[0][0]
+  data = (temps, joueur)
   if(idMax == None):
     sql = "INSERT INTO ScoresEurope (idScore, temps, joueur) VALUES (1, ?, ?)"
   else:
     sql = "INSERT INTO ScoresEurope (idScore, temps, joueur) VALUES (?, ?, ?)"
-    data = (idMax + 1, score, joueur)
+    data = (idMax + 1,) + data
   cur = conn.cursor()
   cur.execute(sql, data)
   conn.commit()
   return cur.lastrowid
 
-def create_score_onu(conn, score, joueur):
-  sql = "SELECT MAX(id) FROM ScoresEurope;"
+def create_score_onu(conn, temps, joueur):
+  sql = "SELECT MAX(idScore) FROM ScoresEurope;"
   cur = conn.cursor()
   cur.execute(sql)
   idMax = cur.fetchall()[0][0]
+  data = (temps, joueur)
   if(idMax == None):
     sql = "INSERT INTO ScoresOnu (idScore, temps, joueur) VALUES (1, ?, ?)"
   else:
     sql = "INSERT INTO ScoresOnu (idScore, temps, joueur) VALUES (?, ?, ?)"
-    data = (idMax + 1, score, joueur)
+    data = (idMax + 1,) + data
   cur = conn.cursor()
   cur.execute(sql, data)
   conn.commit()
   return cur.lastrowid
 
 def select_scores_europe(conn):
-  sql = "SELECT * FROM ScoresEurope ORDER BY temps;"
+  sql = "SELECT temps, joueur FROM ScoresEurope ORDER BY temps;"
   cur = conn.cursor()
   cur.execute(sql)
   row = cur.fetchall()
   return row
 
 def select_scores_onu(conn):
-  sql = "SELECT * FROM ScoresOnu ORDER BY temps;"
+  sql = "SELECT temps, joueur FROM ScoresOnu ORDER BY temps;"
   cur = conn.cursor()
   cur.execute(sql)
   row = cur.fetchall()
