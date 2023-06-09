@@ -54,6 +54,13 @@ def select_scores_europe(conn):
   row = cur.fetchall()
   return row
 
+def select_scores_onu(conn):
+  sql = "SELECT * FROM ScoresOnu ORDER BY temps;"
+  cur = conn.cursor()
+  cur.execute(sql)
+  row = cur.fetchall()
+  return row
+
 def main():
   database = r"bdd.db"
 
