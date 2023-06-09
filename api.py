@@ -23,7 +23,20 @@ def get_scores_europe():
     scores[i] = classes.to_object_score(scores[i])
   return scores
 
+@app.get("/scores_onu")
+def get_scores_onu():
+  conn = bdd.create_connection(database)
+  scores = bdd.select_scores_onu(conn)
+  for i in range(len(scores)):
+    scores[i] = classes.to_object_score(scores[i])
+  return scores
+
 @app.post("/add_score_europe")
 def add_score_europe(score: classes.Score):
   conn = bdd.create_connection(database)
   bdd.create_score_europe(conn, score.temps, score.joueur)
+
+@app.post("/add_score_onu")
+def add_score_onu(score: classes.Score):
+  conn = bdd.create_connection(database)
+  bdd.create_score_onu(conn, score.temps, score.joueur)

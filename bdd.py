@@ -83,6 +83,7 @@ def main():
   conn = create_connection(database)
   if conn is not None:
     create_table(conn, sql_create_scores_europe_table)
+    create_table(conn, sql_create_scores_onu_table)
   else:
     print("Error, can't create the database connection")
 
