@@ -70,7 +70,7 @@ def main():
   CREATE TABLE IF NOT EXISTS ScoresEurope (
     idScore INT PRIMARY KEY,
     temps INT,
-    erreur INT,
+    erreurs INT,
     joueur VARCHAR
   );"""
 
@@ -78,7 +78,7 @@ def main():
   CREATE TABLE IF NOT EXISTS ScoresOnu (
     idScore INT PRIMARY KEY,
     temps INT,
-    erreur INT,
+    erreurs INT,
     joueur VARCHAR
   );"""
 
