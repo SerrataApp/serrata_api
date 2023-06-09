@@ -47,6 +47,13 @@ def create_score_onu(conn, score, joueur):
   conn.commit()
   return cur.lastrowid
 
+def select_scores_europe(conn):
+  sql = "SELECT * FROM ScoresEurope ORDER BY temps;"
+  cur = conn.cursor()
+  cur.execute(sql)
+  row = cur.fetchall()
+  return row
+
 def main():
   database = r"bdd.db"
 
