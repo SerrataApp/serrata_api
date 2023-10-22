@@ -49,7 +49,7 @@ def add_score_onu(score: classes.Score):
   conn = bdd.create_connection(database)
   bdd.create_score(conn, "ScoresAfrique", score.temps, score.erreurs, score.joueur)
 
-@app.post("/add_score_mondee")
+@app.post("/add_score_monde")
 def add_score_onu(score: classes.Score):
   conn = bdd.create_connection(database)
   bdd.create_score(conn, "ScoresMonde", score.temps, score.erreurs, score.joueur)
