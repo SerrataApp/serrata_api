@@ -17,47 +17,24 @@ def create_table(conn, create_table_sql):
   except Error as e:
     print(e)
 
-def create_score_europe(conn, temps, erreurs, joueur):
-  sql = "SELECT MAX(idScore) FROM ScoresEurope;"
+def create_score(conn, table, temps, erreurs, joueur):
+  sql = f"SELECT MAX(idScore) FROM {table};"
   cur = conn.cursor()
   cur.execute(sql)
   idMax = cur.fetchall()[0][0]
   data = (temps, erreurs, joueur)
   if(idMax == None):
-    sql = "INSERT INTO ScoresEurope (idScore, temps, erreurs, joueur) VALUES (1, ?, ?, ?)"
+    sql = f"INSERT INTO {table} (idScore, temps, erreurs, joueur) VALUES (1, ?, ?, ?)"
   else:
-    sql = "INSERT INTO ScoresEurope (idScore, temps, erreurs, joueur) VALUES (?, ?, ?, ?)"
+    sql = f"INSERT INTO {table} (idScore, temps, erreurs, joueur) VALUES (?, ?, ?, ?)"
     data = (idMax + 1,) + data
   cur = conn.cursor()
   cur.execute(sql, data)
   conn.commit()
   return cur.lastrowid
 
-def create_score_onu(conn, temps, erreurs, joueur):
-  sql = "SELECT MAX(idScore) FROM ScoresOnu;"
-  cur = conn.cursor()
-  cur.execute(sql)
-  idMax = cur.fetchall()[0][0]
-  data = (temps, erreurs, joueur)
-  if(idMax == None):
-    sql = "INSERT INTO ScoresOnu (idScore, temps, erreurs, joueur) VALUES (1, ?, ?, ?)"
-  else:
-    sql = "INSERT INTO ScoresOnu (idScore, temps, erreurs, joueur) VALUES (?, ?, ?, ?)"
-    data = (idMax + 1,) + data
-  cur = conn.cursor()
-  cur.execute(sql, data)
-  conn.commit()
-  return cur.lastrowid
-
-def select_scores_europe(conn):
-  sql = "SELECT temps, erreurs, joueur FROM ScoresEurope ORDER BY temps;"
-  cur = conn.cursor()
-  cur.execute(sql)
-  row = cur.fetchall()
-  return row
-
-def select_scores_onu(conn):
-  sql = "SELECT temps, erreurs, joueur FROM ScoresOnu ORDER BY temps;"
+def select_scores(conn, table):
+  sql = f"SELECT temps, erreurs, joueur FROM {table} ORDER BY temps;"
   cur = conn.cursor()
   cur.execute(sql)
   row = cur.fetchall()
@@ -74,8 +51,16 @@ def main():
     joueur VARCHAR
   );"""
 
-  sql_create_scores_onu_table = """
-  CREATE TABLE IF NOT EXISTS ScoresOnu (
+  sql_create_scores_afrique_table = """
+  CREATE TABLE IF NOT EXISTS ScoresAfrique (
+    idScore INT PRIMARY KEY,
+    temps INT,
+    erreurs INT,
+    joueur VARCHAR
+  );"""
+
+  sql_create_scores_monde_table = """
+  CREATE TABLE IF NOT EXISTS ScoresMonde (
     idScore INT PRIMARY KEY,
     temps INT,
     erreurs INT,
@@ -85,7 +70,8 @@ def main():
   conn = create_connection(database)
   if conn is not None:
     create_table(conn, sql_create_scores_europe_table)
-    create_table(conn, sql_create_scores_onu_table)
+    create_table(conn, sql_create_scores_afrique_table)
+    create_table(conn, sql_create_scores_monde_table)
   else:
     print("Error, can't create the database connection")
 

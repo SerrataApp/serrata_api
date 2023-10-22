@@ -18,15 +18,23 @@ database = r"bdd.db"
 @app.get("/scores_europe")
 def get_scores_europe():
   conn = bdd.create_connection(database)
-  scores = bdd.select_scores_europe(conn)
+  scores = bdd.select_scores(conn, "ScoresEurope")
   for i in range(len(scores)):
     scores[i] = classes.to_object_score(scores[i])
   return scores
 
-@app.get("/scores_onu")
-def get_scores_onu():
+@app.get("/scores_afrique")
+def get_scores_afrique():
   conn = bdd.create_connection(database)
-  scores = bdd.select_scores_onu(conn)
+  scores = bdd.select_scores(conn, "ScoresAfrique")
+  for i in range(len(scores)):
+    scores[i] = classes.to_object_score(scores[i])
+  return scores
+
+@app.get("/scores_monde")
+def get_scores_afrique():
+  conn = bdd.create_connection(database)
+  scores = bdd.select_scores(conn, "ScoresMonde")
   for i in range(len(scores)):
     scores[i] = classes.to_object_score(scores[i])
   return scores
@@ -34,9 +42,14 @@ def get_scores_onu():
 @app.post("/add_score_europe")
 def add_score_europe(score: classes.Score):
   conn = bdd.create_connection(database)
-  bdd.create_score_europe(conn, score.temps, score.erreurs, score.joueur)
+  bdd.create_score(conn, "ScoresEurope", score.temps, score.erreurs, score.joueur)
 
-@app.post("/add_score_onu")
+@app.post("/add_score_afrique")
 def add_score_onu(score: classes.Score):
   conn = bdd.create_connection(database)
-  bdd.create_score_onu(conn, score.temps, score.erreurs, score.joueur)
+  bdd.create_score(conn, "ScoresAfrique", score.temps, score.erreurs, score.joueur)
+
+@app.post("/add_score_mondee")
+def add_score_onu(score: classes.Score):
+  conn = bdd.create_connection(database)
+  bdd.create_score(conn, "ScoresMonde", score.temps, score.erreurs, score.joueur)
