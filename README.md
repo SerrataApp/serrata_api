@@ -18,6 +18,8 @@ Développé en Python
 ## Requetes disponibles
 
 - **/scores_europe** récupère tous les scores envoyés dans le mode de jeu "Europe", dans l'ordre croissant des temps
-- **/scores_onu** idem pour le mode de jeu "ONU"
+- **/scores_afrique** idem pour le mode de jeu "Afrique"
+- **/scores_monde** idem pour le mode de jeu "Monde"
 - **/envoyer_score_europe** envoie et enregistre un score lié au mode de jeu "Europe"
-- **/envoyer_score_onu** idem pour le mode "ONU"
+- **/envoyer_score_afrique** idem pour le mode "Afrique"
+- **/envoyer_score_monde** idem pour le mode "Monde"
