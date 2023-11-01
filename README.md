@@ -4,6 +4,10 @@ Création de la base de données et API pour les scores de https://github.com/Co
 
 Développé en Python
 
+## Documentation
+
+https://serrata-api.super-sympa.fr/docs
+
 ## Outils utilisés
 
 - SQLite3 pour la création de la base de données
