@@ -72,8 +72,18 @@ def main():
     joueur VARCHAR
   );"""
 
+    slq_create_utilisateur_table = """
+    CREATE TABLE IF NOT EXISTS Utilisateur (
+    idUtilisateur INT PRIMARY KEY,
+    pseudo VARCHAR,
+    password VARCHAR,
+    email VARCHAR,
+    nbPartiesLance INT,    
+    );"""
+
     conn = create_connection(database)
     if conn is not None:
+        create_table(conn, slq_create_utilisateur_table)
         create_table(conn, sql_create_scores_europe_table)
         create_table(conn, sql_create_scores_afrique_table)
         create_table(conn, sql_create_scores_monde_table)
