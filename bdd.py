@@ -48,6 +48,17 @@ def select_scores(conn, table):
 def main():
     database = r"bdd.db"
 
+    sql_create_scores_table = """
+    CREATE TABLE IF NOT EXISTS Scores (
+    idScore INT PRIMARY KEY,
+    idJoueur INT,
+    temps INT,
+    erreurs INT,
+    indices INT,
+    datePartie DATE,
+    FOREIGN KEY (idJoueur) REFERENCES Utilisateur(idUtilisateur)
+    );"""
+
     sql_create_scores_europe_table = """
   CREATE TABLE IF NOT EXISTS ScoresEurope (
     idScore INT PRIMARY KEY,
@@ -78,7 +89,8 @@ def main():
     pseudo VARCHAR,
     password VARCHAR,
     email VARCHAR,
-    nbPartiesLance INT,    
+    nbPartiesLance INT
+    dateInscription DATE
     );"""
 
     conn = create_connection(database)
