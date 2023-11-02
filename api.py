@@ -75,7 +75,7 @@ async def signup_user(
         username: str,
         password: str,
         email: str,
-        full_name: str,
+        fullname: str,
 ):
     # TODO: check if the password is strong enough
     if username in fake_users_db:
@@ -85,7 +85,7 @@ async def signup_user(
         )
     fake_users_db[username] = {
         "username": username,
-        "full_name": full_name,
+        "full_name": fullname,
         "email": email,
         "hashed_password": get_password_hash(password),
         "disabled": False,
