@@ -1,23 +1,21 @@
-from typing import Union
+from typing import List, Union
 from pydantic import BaseModel
-
-import schemas
 
 
 class User(BaseModel):
     id: int
-    pseudo: str
+    username: str
     email: str
     playedGames: int
     signupDate: str
     is_active: bool
-    wonGames: list[schemas.Game] = []
+    wonGames: List['Game'] = []
 
     class Config:
         orm_mode = True
 
 
-class UserCreate(User):
+class UserInDb(User):
     hashed_password: str
 
 
@@ -27,7 +25,16 @@ class Game(BaseModel):
     errors: int
     hint: int
     gameDate: str
-    playerPseudo: User
+    playerPseudo: 'User'
 
     class Config:
         orm_mode = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: Union[str, None] = None

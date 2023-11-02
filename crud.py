@@ -1,3 +1,9 @@
+from sqlalchemy.orm import Session
+
+import bdtest
+import models
+import schemas
+
 from datetime import datetime, timedelta
 from typing import Annotated, Union
 
@@ -5,9 +11,6 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-
-import classes
-import bdtest
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
@@ -26,14 +29,12 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return classes.UserInDB(**user_dict)
+def get_user(db: Session, username: str):
+    return db.query(models.User).filter(models.User.username == username).first()
 
 
-def authenticate_user(fake_db, username: str, password: str):
-    user = get_user(fake_db, username)
+def authenticate_user(db: Session, username: str, password: str):
+    user = get_user(db, username)
     if not user:
         return False
     if not verify_password(password, user.hashed_password):
@@ -63,7 +64,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
-        token_data = classes.TokenData(username=username)
+        token_data = schemas.TokenData(username=username)
     except JWTError:
         raise credentials_exception
     user = get_user(bdtest.fake_users_db, username=token_data.username)
@@ -73,7 +74,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 
 
 async def get_current_active_user(
-    current_user: Annotated[classes.User, Depends(get_current_user)]
+    current_user: Annotated[schemas.User, Depends(get_current_user)]
 ):
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
