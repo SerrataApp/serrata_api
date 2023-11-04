@@ -31,6 +31,14 @@ def get_scores_afrique():
     scores[i] = classes.to_object_score(scores[i])
   return scores
 
+@app.get("/scores_asie")
+def get_scores_asie():
+  conn = bdd.create_connection(database)
+  scores = bdd.select_scores(conn, "ScoresAsie")
+  for i in range(len(scores)):
+    scores[i] = classes.to_object_score(scores[i])
+  return scores
+
 @app.get("/scores_monde")
 def get_scores_monde():
   conn = bdd.create_connection(database)
@@ -48,6 +56,11 @@ def add_score_europe(score: classes.Score):
 def add_score_afrique(score: classes.Score):
   conn = bdd.create_connection(database)
   bdd.create_score(conn, "ScoresAfrique", score.temps, score.erreurs, score.joueur)
+
+@app.post("/add_score_asie")
+def add_score_asie(score: classes.Score):
+  conn = bdd.create_connection(database)
+  bdd.create_score(conn, "ScoresAsie", score.temps, score.erreurs, score.joueur)
 
 @app.post("/add_score_monde")
 def add_score_monde(score: classes.Score):

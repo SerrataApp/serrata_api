@@ -59,6 +59,14 @@ def main():
     joueur VARCHAR
   );"""
 
+  sql_create_scores_asie_table = """
+  CREATE TABLE IF NOT EXISTS ScoresAsie (
+    idScore INT PRIMARY KEY,
+    temps INT,
+    erreurs INT,
+    joueur VARCHAR
+  );"""
+
   sql_create_scores_monde_table = """
   CREATE TABLE IF NOT EXISTS ScoresMonde (
     idScore INT PRIMARY KEY,
@@ -71,6 +79,7 @@ def main():
   if conn is not None:
     create_table(conn, sql_create_scores_europe_table)
     create_table(conn, sql_create_scores_afrique_table)
+    create_table(conn, sql_create_scores_asie_table)
     create_table(conn, sql_create_scores_monde_table)
   else:
     print("Error, can't create the database connection")
