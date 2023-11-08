@@ -92,3 +92,12 @@ async def get_current_active_user(
     if current_user.is_active is False:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+
+async def delete_user(
+    db: Session,
+    user_id: int,
+):
+    db.query(models.User).filter(models.User.id == user_id).delete()
+    db.commit()
+    return {"message": "User deleted successfully"}

@@ -108,14 +108,13 @@ def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-# #TODO: A refaire
-# @app.delete("/users/me")
-# async def delete_user(current_user: Annotated[schemas.User, Depends(crud.get_current_active_user)]):
-#     del fake_users_db[current_user.username]
-#     return {"message": "User deleted successfully"}
-#
+@app.delete("/users/")
+async def delete_user(id: int, db: Session = Depends(get_db)):
 
-#TODO: A refaire
+    return delete_user(db=db, id=id)
+
+
+#TODO: faire la fonction pour supprimer un utilisateur
 @app.get("/users/me/", response_model=schemas.UserData)
 def read_users_me(
         current_user: Annotated[schemas.User, Depends(crud.get_current_active_user)]
