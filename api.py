@@ -87,30 +87,12 @@ def add_score_monde(score: classes.Score):
 @app.post("/signup", response_model=schemas.UserInDb)
 def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
     #TODO: check if the password is strong enough
-
-    # if crud.get_user(db, username):
-    #     raise HTTPException(
-    #         status_code=400,
-    #         detail="Ce nom d'utlisateur est déjà pris",
-    #     )
-    # fake_users_db[username] = {
-    #     "username": username,
-    #     "email": email,
-    #     "hashed_password": crud.get_password_hash(password),
-    #     "disabled": False,
-    # }
+    if crud.get_user(db, user.username):
+        raise HTTPException(
+            status_code=400,
+            detail="Ce nom d'utlisateur est déjà pris",
+        )
     return crud.create_user(db=db, user=user)
-@app.get("/")
-def test():
-    return {"message": "Hello World", "test": "test"}
-
-
-# #TODO: A refaire
-# @app.delete("/users/me")
-# async def delete_user(current_user: Annotated[schemas.User, Depends(crud.get_current_active_user)]):
-#     del fake_users_db[current_user.username]
-#     return {"message": "User deleted successfully"}
-#
 
 
 @app.post("/token", response_model=schemas.Token)
@@ -135,21 +117,17 @@ def login_for_access_token(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+
 # #TODO: A refaire
-# @app.get("/users/me/", response_model=schemas.User)
-# async def read_users_me(
-#         current_user: Annotated[schemas.User, Depends(crud.get_current_active_user)]
-# ):
-#     return current_user
+# @app.delete("/users/me")
+# async def delete_user(current_user: Annotated[schemas.User, Depends(crud.get_current_active_user)]):
+#     del fake_users_db[current_user.username]
+#     return {"message": "User deleted successfully"}
 #
-# #TODO: A refaire
-# @app.get("/users/me/items/")
-# async def read_own_items(
-#         current_user: Annotated[schemas.User, Depends(crud.get_current_active_user)]
-# ):
-#     return [{"item_id": "Foo", "owner": current_user.username}]
-#
-# #TODO: A refaire
-# @app.post("/test/")
-# async def test(message: str):
-#     return {"message": message}
+
+#TODO: A refaire
+@app.get("/users/me/", response_model=schemas.User)
+async def read_users_me(
+        current_user: Annotated[schemas.User, Depends(crud.get_current_active_user)]
+):
+    return current_user
