@@ -6,13 +6,16 @@ class User(BaseModel):
     id: int
     username: str
     email: str
-    playedGames: int
-    signupDate: str
-    is_active: bool
-    wonGames: List['Game'] = []
+
+    #wonGames: List['Game'] = []
 
     class Config:
         orm_mode = True
+
+class UserData(User):
+    playedGames: int
+    signupDate: str
+    is_active: bool
 
 
 class UserInDb(User):

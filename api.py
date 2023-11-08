@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from datetime import timedelta
+from datetime import timedelta, datetime
 from typing import Annotated
 
 from bdtest import fake_users_db
@@ -84,28 +84,27 @@ def add_score_monde(score: classes.Score):
     bdd.create_score(conn, "ScoresMonde", score.temps, score.erreurs, score.joueur)
 
 #TODO: A refaire
-# @app.post("/signup", response_model=schemas.UserInDb)
-# async def signup_user(
-#         username: str,
-#         password: str,
-#         email: str,
-#         fullname: str,
-# ):
-#     # TODO: check if the password is strong enough
-#     if username in fake_users_db:
-#         raise HTTPException(
-#             status_code=400,
-#             detail="Ce nom d'utlisateur est déjà pris",
-#         )
-#     fake_users_db[username] = {
-#         "username": username,
-#         "full_name": fullname,
-#         "email": email,
-#         "hashed_password": crud.get_password_hash(password),
-#         "disabled": False,
-#     }
-#     return {"username": fake_users_db[username]}
-#
+@app.post("/signup", response_model=schemas.UserInDb)
+def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
+    #TODO: check if the password is strong enough
+
+    # if crud.get_user(db, username):
+    #     raise HTTPException(
+    #         status_code=400,
+    #         detail="Ce nom d'utlisateur est déjà pris",
+    #     )
+    # fake_users_db[username] = {
+    #     "username": username,
+    #     "email": email,
+    #     "hashed_password": crud.get_password_hash(password),
+    #     "disabled": False,
+    # }
+    return crud.create_user(db=db, user=user)
+@app.get("/")
+def test():
+    return {"message": "Hello World", "test": "test"}
+
+
 # #TODO: A refaire
 # @app.delete("/users/me")
 # async def delete_user(current_user: Annotated[schemas.User, Depends(crud.get_current_active_user)]):
@@ -113,12 +112,17 @@ def add_score_monde(score: classes.Score):
 #     return {"message": "User deleted successfully"}
 #
 
+
 @app.post("/token", response_model=schemas.Token)
-async def login_for_access_token(
+def login_for_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-        db: Session = Depends(get_db)
 ):
+    db: Session = Depends(get_db)
     user = crud.authenticate_user(db, form_data.username, form_data.password)
+    print(db)
+    print(form_data.username)
+    print(form_data.password)
+    print(user)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
