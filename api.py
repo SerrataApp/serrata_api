@@ -83,7 +83,7 @@ def add_score_monde(score: classes.Score):
     conn = bdd.create_connection(database)
     bdd.create_score(conn, "ScoresMonde", score.temps, score.erreurs, score.joueur)
 
-#TODO: A refaire
+
 @app.post("/signup", response_model=schemas.UserInDb)
 def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
     #TODO: check if the password is strong enough
@@ -98,13 +98,9 @@ def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
 @app.post("/token", response_model=schemas.Token)
 def login_for_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+        db: Session = Depends(get_db)
 ):
-    db: Session = Depends(get_db)
     user = crud.authenticate_user(db, form_data.username, form_data.password)
-    print(db)
-    print(form_data.username)
-    print(form_data.password)
-    print(user)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
