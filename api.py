@@ -6,12 +6,12 @@ from sqlalchemy.orm import Session
 from datetime import timedelta, datetime
 from typing import Annotated
 
-from bdtest import fake_users_db
 import bdd
 import models
 import crud
 import classes
 import schemas
+from get_db import get_db
 from database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
@@ -20,12 +20,6 @@ app = FastAPI()
 
 
 # Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 app.add_middleware(
@@ -122,8 +116,8 @@ def login_for_access_token(
 #
 
 #TODO: A refaire
-@app.get("/users/me/", response_model=schemas.User)
-async def read_users_me(
+@app.get("/users/me/", response_model=schemas.UserData)
+def read_users_me(
         current_user: Annotated[schemas.User, Depends(crud.get_current_active_user)]
 ):
     return current_user
