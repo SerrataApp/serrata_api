@@ -13,8 +13,8 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
-    playedGames = Column(Integer, default=0)
-    signupDate = Column(Date, default=datetime.date.today())
+    played_games = Column(Integer, default=0)
+    signup_date = Column(Date, default=datetime.date.today(), index=True)
     is_active = Column(Boolean, default=True)
 
     #wonGames = relationship("Game", backref="user")
@@ -23,9 +23,10 @@ class User(Base):
 class Game(Base):
     __tablename__ = "games"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, unique=True, index=True)
+    game_mode = Column(Integer, index=True)
     time = Column(Time, index=True)
-    errors = Column(Integer)
-    hint = Column(Integer)
-    gameDate = Column(Date)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    errors = Column(Integer, index=True)
+    hint = Column(Integer, index=True)
+    game_date = Column(Date, default=datetime.date.today(), index=True)
+    player_id = Column(Integer, ForeignKey("users.id"))

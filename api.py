@@ -87,10 +87,15 @@ def add_score_monde(score: classes.Score):
 @app.post("/signup", response_model=schemas.UserInDb)
 def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
     #TODO: check if the password is strong enough
-    if crud.get_user(db, user.username):
+    if crud.get_user_by_username(username=user.username,db=db):
         raise HTTPException(
             status_code=400,
             detail="Ce nom d'utlisateur est déjà pris",
+        )
+    if crud.get_user_by_email(email=user.email,db=db):
+        raise HTTPException(
+            status_code=400,
+            detail="Cette email est déjà prise",
         )
     return crud.create_user(db=db, user=user)
 
@@ -127,7 +132,14 @@ def login_for_access_token(
 
 #TODO: A refaire
 @app.get("/users/me/", response_model=schemas.User)
-async def read_users_me(
+def read_users_me(
         current_user: Annotated[schemas.User, Depends(crud.get_current_active_user)]
 ):
     return current_user
+
+
+@app.post("/score", response_model=schemas.Game)
+def create_score(
+        score: schemas.Game, db: Session = Depends((get_db))
+):
+    return crud.create_score(score=score, db=db)

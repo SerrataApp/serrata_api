@@ -29,8 +29,12 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def get_user(db: Session, username: str):
+def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
+
+
+def get_user_by_email(db: Session, email: str):
+    return db.query(models.User).filter(models.User.email == email).first()
 
 
 def create_user(db: Session, user: schemas.UserInDb):
@@ -46,7 +50,7 @@ def create_user(db: Session, user: schemas.UserInDb):
     return db_user
 
 def authenticate_user(db: Session, username: str, password: str):
-    user = get_user(db, username)
+    user = get_user_by_username(db=db, username=username)
     if not user:
         return False
     if not verify_password(password, user.hashed_password):
@@ -79,7 +83,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         token_data = schemas.TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = get_user(bdtest.fake_users_db, username=token_data.username)
+    user = get_user_by_username(bdtest.fake_users_db, username=token_data.username)
     if user is None:
         raise credentials_exception
     return user
@@ -91,3 +95,17 @@ async def get_current_active_user(
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+
+def create_score(score: schemas.Game, db: Session):
+    db_score = models.Game(
+        game_mode=score.game_mode,
+        time=score.time,
+        errors=score.errors,
+        hint=score.hint,
+        player_id=score.playerId,
+    )
+    db.add(db_score)
+    db.commit()
+    db.refresh(db_score)
+    return db_score
