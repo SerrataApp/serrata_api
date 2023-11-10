@@ -60,28 +60,36 @@ def main():
     );"""
 
     sql_create_scores_europe_table = """
-  CREATE TABLE IF NOT EXISTS ScoresEurope (
+    CREATE TABLE IF NOT EXISTS ScoresEurope (
     idScore INT PRIMARY KEY,
     temps INT,
     erreurs INT,
     joueur VARCHAR
-  );"""
+    );"""
 
     sql_create_scores_afrique_table = """
-  CREATE TABLE IF NOT EXISTS ScoresAfrique (
+    CREATE TABLE IF NOT EXISTS ScoresAfrique (
     idScore INT PRIMARY KEY,
     temps INT,
     erreurs INT,
     joueur VARCHAR
-  );"""
+    );"""
+
+    sql_create_scores_asie_table = """
+    CREATE TABLE IF NOT EXISTS ScoresAsie (
+      idScore INT PRIMARY KEY,
+      temps INT,
+      erreurs INT,
+      joueur VARCHAR
+    );"""
 
     sql_create_scores_monde_table = """
-  CREATE TABLE IF NOT EXISTS ScoresMonde (
-    idScore INT PRIMARY KEY,
-    temps INT,
-    erreurs INT,
-    joueur VARCHAR
-  );"""
+    CREATE TABLE IF NOT EXISTS ScoresMonde (
+      idScore INT PRIMARY KEY,
+      temps INT,
+      erreurs INT,
+      joueur VARCHAR
+    );"""
 
     slq_create_utilisateur_table = """
     CREATE TABLE IF NOT EXISTS Utilisateur (
@@ -101,7 +109,6 @@ def main():
         create_table(conn, sql_create_scores_monde_table)
     else:
         print("Error, can't create the database connection")
-
 
 if __name__ == '__main__':
     main()
