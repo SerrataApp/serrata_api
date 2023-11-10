@@ -1,9 +1,9 @@
-import datetime
 from typing import List, Union
 from pydantic import BaseModel
 
 
 class User(BaseModel):
+    id: int
     username: str
     email: str
 
@@ -12,11 +12,9 @@ class User(BaseModel):
     class Config:
         orm_mode = True
 
-
 class UserData(User):
-    id: int
-    played_games: int
-    signup_date: datetime.date
+    playedGames: int
+    signupDate: str
     is_active: bool
 
 
@@ -25,19 +23,15 @@ class UserInDb(User):
 
 
 class Game(BaseModel):
-    game_mode: int
-    time: datetime.time
+    id: int
+    time: str
     errors: int
     hint: int
-    player_id: int
+    gameDate: str
+    playerPseudo: 'User'
 
     class Config:
         orm_mode = True
-
-
-class GameData(Game):
-    id: int
-    game_date: datetime.date
 
 
 class Token(BaseModel):
