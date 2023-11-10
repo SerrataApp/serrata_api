@@ -38,6 +38,9 @@ def get_user_by_username(db: Session, username: str):
 def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
 
+def get_user_by_id(db: Session, id: int):
+    return db.query(models.User).filter(models.User.id == id).first()
+
 
 def create_user(db: Session, user: schemas.UserInDb):
     hashed_password = get_password_hash(user.hashed_password)
@@ -47,6 +50,14 @@ def create_user(db: Session, user: schemas.UserInDb):
         hashed_password=hashed_password,
     )
     db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+def delete_user(db: Session, id: int):
+    db_user = get_user_by_id(db=db, id=id)
+    db.delete(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
@@ -78,7 +89,7 @@ async def get_current_user(
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
+        detail="Impossible de valider les informations d'identification",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
@@ -101,3 +112,18 @@ async def get_current_active_user(
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+
+def create_game(game: schemas.GameInDb, db: Session):
+    user_id: int = get_user_by_username(db=db, username=game.player)
+    db_game = models.Game(
+        game_mode=game.game_mode,
+        time=game.time,
+        errors=game.errors,
+        hint=game.hint,
+        player=user_id
+    )
+    db.add(db_game)
+    db.commit()
+    db.refresh(db_game)
+    return game

@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from datetime import timedelta, datetime
@@ -82,6 +83,7 @@ def add_score_asie(score: classes.Score):
   conn = bdd.create_connection(database)
   bdd.create_score(conn, "ScoresAsie", score.temps, score.erreurs, score.joueur)
 
+
 @app.post("/add_score_monde")
 def add_score_monde(score: classes.Score):
     conn = bdd.create_connection(database)
@@ -90,18 +92,15 @@ def add_score_monde(score: classes.Score):
 #TODO: A refaire
 @app.post("/signup", response_model=schemas.UserInDb)
 def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
-    #TODO: check if the password is strong enough
-    if crud.get_user_by_username(db=db, username=user.username):
+    try:
+        user: schemas.UserInDb = crud.create_user(db=db, user=user)
+        return user
+    except IntegrityError as e:
         raise HTTPException(
-            status_code=400,
-            detail="Ce nom d'utlisateur est déjà pris",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="L'email ou le nom d'utilisateur éxiste déjà!",
+            headers={"WWW-Authenticate": "Bearer"},
         )
-    if crud.get_user_by_email(db=db, email=user.email):
-        raise HTTPException(
-            status_code=400,
-            detail="Cette email est déjà prise",
-        )
-    return crud.create_user(db=db, user=user)
 
 
 @app.post("/token", response_model=schemas.Token)
@@ -136,3 +135,22 @@ async def read_users_me(
         current_user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)]
 ):
     return current_user
+
+
+@app.delete("/users/", response_model=schemas.UserData)
+def delete_user(
+        #TODO: checker si le user est admin
+        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
+        user_id: int,
+        db: Session = Depends(get_db)
+):
+    return delete_user(db=db, id=user_id)
+
+
+@app.post("/score/", response_model=schemas.GameInDb)
+def create_game(
+        #TODO erreur bizarre
+        game: schemas.Game,
+        db: Session = Depends(get_db),
+):
+    return create_game(game=game, db=db)

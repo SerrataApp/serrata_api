@@ -16,6 +16,7 @@ class User(Base):
     played_games = Column(Integer, default=0)
     signup_date = Column(Date, default=datetime.date.today(), index=True)
     disabled = Column(Boolean, default=False, index=True)
+    admin = Column(Boolean, default=False)
 
     #wonGames = relationship("Game", backref="user")
 
