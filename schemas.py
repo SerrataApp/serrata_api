@@ -28,7 +28,7 @@ class Game(BaseModel):
     errors: int
     hint: int
     gameDate: str
-    player_pseudo: 'User'
+    player_pseudo: int
 
     class Config:
         orm_mode = True

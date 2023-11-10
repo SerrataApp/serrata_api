@@ -13,20 +13,11 @@ import crud
 import classes
 import schemas
 from database import SessionLocal, engine
+from get_db import get_db
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-
-
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -87,10 +78,15 @@ def add_score_monde(score: classes.Score):
 @app.post("/signup", response_model=schemas.UserInDb)
 def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
     #TODO: check if the password is strong enough
-    if crud.get_user(db, user.username):
+    if crud.get_user_by_username(db=db, username=user.username):
         raise HTTPException(
             status_code=400,
             detail="Ce nom d'utlisateur est déjà pris",
+        )
+    if crud.get_user_by_email(db=db, email=user.email):
+        raise HTTPException(
+            status_code=400,
+            detail="Cette email est déjà prise",
         )
     return crud.create_user(db=db, user=user)
 
