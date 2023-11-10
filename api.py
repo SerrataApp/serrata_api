@@ -94,13 +94,9 @@ def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
 @app.post("/token", response_model=schemas.Token)
 def login_for_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+        db: Session = Depends(get_db)
 ):
-    db: Session = Depends(get_db)
     user = crud.authenticate_user(db, form_data.username, form_data.password)
-    print(db)
-    print(form_data.username)
-    print(form_data.password)
-    print(user)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -122,8 +118,8 @@ def login_for_access_token(
 #
 
 #TODO: A refaire
-@app.get("/users/me/", response_model=schemas.User)
+@app.get("/users/me/", response_model=schemas.UserData)
 async def read_users_me(
-        current_user: Annotated[schemas.User, Depends(crud.get_current_active_user)]
+        current_user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)]
 ):
     return current_user

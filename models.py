@@ -15,7 +15,7 @@ class User(Base):
     hashed_password = Column(String)
     played_games = Column(Integer, default=0)
     signup_date = Column(Date, default=datetime.date.today(), index=True)
-    is_active = Column(Boolean, default=True)
+    disabled = Column(Boolean, default=False, index=True)
 
     #wonGames = relationship("Game", backref="user")
 

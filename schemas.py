@@ -1,3 +1,4 @@
+import datetime
 from typing import List, Union
 from pydantic import BaseModel
 
@@ -14,8 +15,8 @@ class User(BaseModel):
 class UserData(User):
     id: int
     played_games: int
-    signup_date: str
-    is_active: bool
+    signup_date: datetime.date
+    disabled: bool
 
 
 class UserInDb(User):
