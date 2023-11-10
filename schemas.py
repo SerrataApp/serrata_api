@@ -3,7 +3,6 @@ from pydantic import BaseModel
 
 
 class User(BaseModel):
-    id: int
     username: str
     email: str
 
@@ -13,8 +12,9 @@ class User(BaseModel):
         orm_mode = True
 
 class UserData(User):
-    playedGames: int
-    signupDate: str
+    id: int
+    played_games: int
+    signup_date: str
     is_active: bool
 
 
@@ -28,7 +28,7 @@ class Game(BaseModel):
     errors: int
     hint: int
     gameDate: str
-    playerPseudo: 'User'
+    player_pseudo: 'User'
 
     class Config:
         orm_mode = True
