@@ -5,17 +5,13 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import UnmappedInstanceError
 from sqlalchemy.orm import Session
 
-from datetime import timedelta, datetime
+from datetime import timedelta
 from typing import Annotated
 
-from bdtest import fake_users_db
-import bdd
-import models
-import crud
-import classes
-import schemas
-from database import SessionLocal, engine
-from get_db import get_db
+
+from . import crud, models, schemas
+from .database import engine
+from .get_db import get_db
 
 models.Base.metadata.create_all(bind=engine)
 
