@@ -32,65 +32,6 @@ app.add_middleware(
 database = r"bdd.db"
 
 
-@app.get("/scores_europe")
-def get_scores_europe():
-    conn = bdd.create_connection(database)
-    scores = bdd.select_scores(conn, "ScoresEurope")
-    for i in range(len(scores)):
-        scores[i] = classes.to_object_score(scores[i])
-    return scores
-
-
-@app.get("/scores_afrique")
-def get_scores_afrique():
-    conn = bdd.create_connection(database)
-    scores = bdd.select_scores(conn, "ScoresAfrique")
-    for i in range(len(scores)):
-        scores[i] = classes.to_object_score(scores[i])
-    return scores
-
-
-@app.get("/scores_asie")
-def get_scores_asie():
-  conn = bdd.create_connection(database)
-  scores = bdd.select_scores(conn, "ScoresAsie")
-  for i in range(len(scores)):
-    scores[i] = classes.to_object_score(scores[i])
-  return scores
-
-@app.get("/scores_monde")
-def get_scores_monde():
-    conn = bdd.create_connection(database)
-    scores = bdd.select_scores(conn, "ScoresMonde")
-    for i in range(len(scores)):
-        scores[i] = classes.to_object_score(scores[i])
-    return scores
-
-
-@app.post("/add_score_europe")
-def add_score_europe(score: classes.Score):
-    conn = bdd.create_connection(database)
-    bdd.create_score(conn, "ScoresEurope", score.temps, score.erreurs, score.joueur)
-
-
-@app.post("/add_score_afrique")
-def add_score_afrique(score: classes.Score):
-    conn = bdd.create_connection(database)
-    bdd.create_score(conn, "ScoresAfrique", score.temps, score.erreurs, score.joueur)
-
-
-@app.post("/add_score_asie")
-def add_score_asie(score: classes.Score):
-  conn = bdd.create_connection(database)
-  bdd.create_score(conn, "ScoresAsie", score.temps, score.erreurs, score.joueur)
-
-
-@app.post("/add_score_monde")
-def add_score_monde(score: classes.Score):
-    conn = bdd.create_connection(database)
-    bdd.create_score(conn, "ScoresMonde", score.temps, score.erreurs, score.joueur)
-
-#TODO: A refaire
 @app.post("/signup", response_model=schemas.UserData)
 def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
     try:
@@ -131,6 +72,16 @@ def get_game(
     return crud.get_game(db=db, game_id=game_id)
 
 
+@app.get("/scores/", response_model=schemas.GameInDb)
+def get_games(
+        skip: int = 0,
+        limit: int = 100,
+        db: Session = Depends(get_db)
+):
+    games = crud.get_games(db=db, skip=skip, limit=limit)
+    return games
+
+
 @app.get("/users/me/", response_model=schemas.UserData)
 async def read_users_me(
         current_user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)]
@@ -138,7 +89,7 @@ async def read_users_me(
     return current_user
 
 
-@app.delete("/users/me/", response_model=schemas.UserData)
+@app.delete("/users/me/", response_model=list[schemas.UserData])
 def delete_user(
         user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
         db: Session = Depends(get_db)

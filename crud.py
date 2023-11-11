@@ -45,8 +45,12 @@ def get_user_by_id(db: Session, id: int):
 
 
 def get_game(db: Session, game_id: int):
-    game: schemas.GameInDb = db.query(models.Game).filter(models.Game.id == game_id).first()
-    return game
+    return db.query(models.Game).filter(models.Game.id == game_id).first()
+
+
+def get_games(db: Session, skip: int, limit: int):
+    return db.query(models.Game).offset(skip).limit(limit).all()
+
 
 def create_user(db: Session, user: schemas.UserInDb):
     hashed_password = get_password_hash(user.hashed_password)
@@ -62,14 +66,19 @@ def create_user(db: Session, user: schemas.UserInDb):
 
 
 def create_game(db: Session, game: schemas.Game):
-    user: schemas.UserData = get_user_by_username(db=db, username=game.player)
-    user_id = user.id
+    user: schemas.UserData = get_user_by_id(db=db, id=game.player_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="L'utilisateur n'existe pas",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     db_game = models.Game(
         game_mode=game.game_mode,
         time=game.time,
         errors=game.errors,
         hint=game.hint,
-        player_id=user_id
+        player_id=game.player_id,
     )
     db.add(db_game)
     db.commit()

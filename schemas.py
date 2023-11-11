@@ -30,7 +30,7 @@ class Game(BaseModel):
     time: datetime.time
     errors: int
     hint: int
-    player: str
+    player_id: int
 
     class Config:
         orm_mode = True
