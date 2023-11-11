@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.exc import UnmappedInstanceError
 from sqlalchemy.orm import Session
 
 from datetime import timedelta, datetime
@@ -90,12 +91,12 @@ def add_score_monde(score: classes.Score):
     bdd.create_score(conn, "ScoresMonde", score.temps, score.erreurs, score.joueur)
 
 #TODO: A refaire
-@app.post("/signup", response_model=schemas.UserInDb)
+@app.post("/signup", response_model=schemas.UserData)
 def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
     try:
         user: schemas.UserInDb = crud.create_user(db=db, user=user)
         return user
-    except IntegrityError as e:
+    except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="L'email ou le nom d'utilisateur éxiste déjà!",
@@ -112,7 +113,7 @@ def login_for_access_token(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="Mauvais mot de passe ou nom d'utilisateur",
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token_expires = timedelta(minutes=crud.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -136,6 +137,13 @@ async def read_users_me(
 ):
     return current_user
 
+@app.delete("/users/me/", response_model=schemas.UserData)
+def delete_user(
+        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
+        db: Session = Depends(get_db)
+):
+    return crud.delete_user(db=db, id=user.id)
+
 
 @app.delete("/users/", response_model=schemas.UserData)
 def delete_user(
@@ -144,13 +152,28 @@ def delete_user(
         user_id: int,
         db: Session = Depends(get_db)
 ):
-    return delete_user(db=db, id=user_id)
+    if user.admin:
+        try:
+            user: schemas.UserData = crud.delete_user(db=db, id=user_id)
+            return user
+        except UnmappedInstanceError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="L'utilisateur n'existe pas!",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Vous n'avez pas les droits pour effectuer cette action",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
-@app.post("/score/", response_model=schemas.GameInDb)
+@app.post("/score/", response_model=schemas.Game)
 def create_game(
         #TODO erreur bizarre
         game: schemas.Game,
-        db: Session = Depends(get_db),
+        db: Session = Depends(get_db)
 ):
-    return create_game(game=game, db=db)
+    return crud.create_game(game=game, db=db)

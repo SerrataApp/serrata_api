@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Union
+from typing import List, Union, Optional
 from pydantic import BaseModel
 
 
@@ -37,8 +37,8 @@ class Game(BaseModel):
 
 
 class GameInDb(Game):
-    id: int
-    game_date: datetime.date
+    id: Optional[int]
+    game_date: Optional[datetime.date]
 
 
 class Token(BaseModel):
