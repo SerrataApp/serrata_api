@@ -28,6 +28,45 @@ app.add_middleware(
 database = r"bdd.db"
 
 
+@app.get("/users/me/", response_model=schemas.UserData, tags=["users"])
+async def read_users_me(
+        current_user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)]
+):
+    return current_user
+
+
+@app.delete("/users/me/", response_model=schemas.UserData, tags=["users"])
+def delete_user(
+        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
+        db: Session = Depends(get_db)
+):
+    return crud.delete_user(db=db, id=user.id)
+
+
+@app.delete("/users/", response_model=schemas.UserData, tags=["users"])
+def delete_user(
+        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
+        user_id: int,
+        db: Session = Depends(get_db)
+):
+    if user.admin:
+        try:
+            user: schemas.UserData = crud.delete_user(db=db, id=user_id)
+            return user
+        except UnmappedInstanceError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="L'utilisateur n'existe pas!",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Vous n'avez pas les droits pour effectuer cette action",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
 @app.post("/signup", response_model=schemas.UserData, tags=["users"])
 def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
     try:
@@ -76,45 +115,6 @@ def get_games(
 ):
     games = crud.get_games(db=db, skip=skip, limit=limit)
     return games
-
-
-@app.get("/users/me/", response_model=schemas.UserData, tags=["users"])
-async def read_users_me(
-        current_user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)]
-):
-    return current_user
-
-
-@app.delete("/users/me/", response_model=list[schemas.UserData], tags=["users"])
-def delete_user(
-        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
-        db: Session = Depends(get_db)
-):
-    return crud.delete_user(db=db, id=user.id)
-
-
-@app.delete("/users/", response_model=schemas.UserData, tags=["users"])
-def delete_user(
-        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
-        user_id: int,
-        db: Session = Depends(get_db)
-):
-    if user.admin:
-        try:
-            user: schemas.UserData = crud.delete_user(db=db, id=user_id)
-            return user
-        except UnmappedInstanceError:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="L'utilisateur n'existe pas!",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Vous n'avez pas les droits pour effectuer cette action",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
 
 
 @app.post("/score/", response_model=schemas.Game, tags=["scores"])
