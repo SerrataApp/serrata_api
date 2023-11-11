@@ -123,19 +123,20 @@ def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-# #TODO: A refaire
-# @app.delete("/users/me")
-# async def delete_user(current_user: Annotated[schemas.User, Depends(crud.get_current_active_user)]):
-#     del fake_users_db[current_user.username]
-#     return {"message": "User deleted successfully"}
-#
+@app.get("/score/", response_model=schemas.GameInDb)
+def get_game(
+        game_id: int,
+        db: Session = Depends(get_db)
+):
+    return crud.get_game(db=db, game_id=game_id)
 
-#TODO: A refaire
+
 @app.get("/users/me/", response_model=schemas.UserData)
 async def read_users_me(
         current_user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)]
 ):
     return current_user
+
 
 @app.delete("/users/me/", response_model=schemas.UserData)
 def delete_user(
@@ -172,7 +173,7 @@ def delete_user(
 
 @app.post("/score/", response_model=schemas.Game)
 def create_game(
-        #TODO erreur bizarre
+        #TODO verifier que l'utilisateur est conncté
         game: schemas.Game,
         db: Session = Depends(get_db)
 ):

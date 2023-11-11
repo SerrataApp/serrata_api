@@ -35,12 +35,18 @@ def get_password_hash(password):
 def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
 
+
 def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
+
 
 def get_user_by_id(db: Session, id: int):
     return db.query(models.User).filter(models.User.id == id).first()
 
+
+def get_game(db: Session, game_id: int):
+    game: schemas.GameInDb = db.query(models.Game).filter(models.Game.id == game_id).first()
+    return game
 
 def create_user(db: Session, user: schemas.UserInDb):
     hashed_password = get_password_hash(user.hashed_password)
@@ -69,7 +75,6 @@ def create_game(db: Session, game: schemas.Game):
     db.commit()
     db.refresh(db_game)
     return game
-
 
 
 def delete_user(db: Session, id: int):
