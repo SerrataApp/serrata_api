@@ -28,7 +28,7 @@ app.add_middleware(
 database = r"bdd.db"
 
 
-@app.post("/signup", response_model=schemas.UserData)
+@app.post("/signup", response_model=schemas.UserData, tags=["users"])
 def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
     try:
         user: schemas.UserInDb = crud.create_user(db=db, user=user)
@@ -41,7 +41,7 @@ def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
         )
 
 
-@app.post("/token", response_model=schemas.Token)
+@app.post("/token", response_model=schemas.Token, tags=["users"])
 def login_for_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
         db: Session = Depends(get_db)
@@ -60,7 +60,7 @@ def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@app.get("/score/", response_model=schemas.GameInDb)
+@app.get("/score/", response_model=schemas.GameInDb, tags=["scores"])
 def get_game(
         game_id: int,
         db: Session = Depends(get_db)
@@ -68,7 +68,7 @@ def get_game(
     return crud.get_game(db=db, game_id=game_id)
 
 
-@app.get("/scores/", response_model=list[schemas.GameInDb])
+@app.get("/scores/", response_model=list[schemas.GameInDb], tags=["scores"])
 def get_games(
         skip: int = 0,
         limit: int = 100,
@@ -78,14 +78,14 @@ def get_games(
     return games
 
 
-@app.get("/users/me/", response_model=schemas.UserData)
+@app.get("/users/me/", response_model=schemas.UserData, tags=["users"])
 async def read_users_me(
         current_user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)]
 ):
     return current_user
 
 
-@app.delete("/users/me/", response_model=list[schemas.UserData])
+@app.delete("/users/me/", response_model=list[schemas.UserData], tags=["users"])
 def delete_user(
         user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
         db: Session = Depends(get_db)
@@ -93,7 +93,7 @@ def delete_user(
     return crud.delete_user(db=db, id=user.id)
 
 
-@app.delete("/users/", response_model=schemas.UserData)
+@app.delete("/users/", response_model=schemas.UserData, tags=["users"])
 def delete_user(
         user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
         user_id: int,
@@ -117,7 +117,7 @@ def delete_user(
         )
 
 
-@app.post("/score/", response_model=schemas.Game)
+@app.post("/score/", response_model=schemas.Game, tags=["scores"])
 def create_game(
         user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
         #TODO verifier que l'utilisateur est conncté
