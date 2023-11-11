@@ -72,7 +72,7 @@ def get_game(
     return crud.get_game(db=db, game_id=game_id)
 
 
-@app.get("/scores/", response_model=schemas.GameInDb)
+@app.get("/scores/", response_model=list[schemas.GameInDb])
 def get_games(
         skip: int = 0,
         limit: int = 100,
