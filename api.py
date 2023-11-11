@@ -99,7 +99,6 @@ def delete_user(
 
 @app.delete("/users/", response_model=schemas.UserData)
 def delete_user(
-        #TODO: checker si le user est admin
         user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
         user_id: int,
         db: Session = Depends(get_db)
@@ -124,8 +123,16 @@ def delete_user(
 
 @app.post("/score/", response_model=schemas.Game)
 def create_game(
+        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
         #TODO verifier que l'utilisateur est conncté
         game: schemas.Game,
         db: Session = Depends(get_db)
 ):
-    return crud.create_game(game=game, db=db)
+    if user.id == game.player_id:
+        return crud.create_game(game=game, db=db)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Vous n'avez pas les droits pour effectuer cette action",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
