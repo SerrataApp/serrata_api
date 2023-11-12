@@ -50,9 +50,12 @@ def get_game(db: Session, game_id: int):
 def get_games(db: Session, skip: int, limit: int):
     return db.query(models.Game).offset(skip).limit(limit).all()
 
+def get_games_by_user(db: Session, user_id: int):
+    return db.query(models.Game).filter(models.Game.player_id == user_id)
+
 
 def create_user(db: Session, user: schemas.UserInDb):
-    hashed_password = get_password_hash(user.hashed_password)
+    hashed_password = get_password_hash(user.password)
     db_user = models.User(
         username=user.username,
         email=user.email,
@@ -78,11 +81,18 @@ def create_game(db: Session, game: schemas.Game):
         errors=game.errors,
         hint=game.hint,
         player_id=game.player_id,
+        public=game.public,
     )
     db.add(db_game)
     db.commit()
     db.refresh(db_game)
     return game
+
+def delete_game(db: Session, game_id: int):
+    db_game: schemas.GameInDb = get_game(db=db, game_id=game_id)
+    db.delete(db_game)
+    db.commit()
+    return db_game
 
 
 def delete_user(db: Session, id: int):

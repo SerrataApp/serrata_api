@@ -107,20 +107,24 @@ def get_game(
     return crud.get_game(db=db, game_id=game_id)
 
 
-@app.get("/scores/", response_model=list[schemas.GameInDb], tags=["scores"])
-def get_games(
-        skip: int = 0,
-        limit: int = 100,
+@app.get("/score/user/", response_model=list[schemas.GameInDb], tags=["scores"])
+def get_games_by_user(
+        user_id: int,
         db: Session = Depends(get_db)
 ):
-    games = crud.get_games(db=db, skip=skip, limit=limit)
-    return games
+    try:
+        return crud.get_games_by_user(db=db, user_id=user_id)
+    except UnmappedInstanceError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="L'utilisateur' n'existe pas!",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
 @app.post("/score/", response_model=schemas.Game, tags=["scores"])
 def create_game(
         user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
-        #TODO verifier que l'utilisateur est conncté
         game: schemas.Game,
         db: Session = Depends(get_db)
 ):
@@ -132,3 +136,36 @@ def create_game(
             detail="Vous n'avez pas les droits pour effectuer cette action",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+@app.delete("/score/", response_model=schemas.GameInDb, tags=["scores"])
+def delete_game(
+        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
+        game_id: int,
+        db: Session = Depends(get_db)
+):
+    if user.admin:
+        try:
+            return crud.delete_game(db=db, game_id=game_id)
+        except UnmappedInstanceError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="La partie n'existe pas!",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Vous n'avez pas les droits pour effectuer cette action",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+@app.get("/scores/", response_model=list[schemas.GameInDb], tags=["scores"])
+def get_games(
+        skip: int = 0,
+        limit: int = 100,
+        db: Session = Depends(get_db)
+):
+    games = crud.get_games(db=db, skip=skip, limit=limit)
+    return games

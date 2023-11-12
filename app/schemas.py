@@ -22,7 +22,7 @@ class UserData(User):
 
 
 class UserInDb(User):
-    hashed_password: str
+    password: str
 
 
 class Game(BaseModel):
@@ -31,6 +31,7 @@ class Game(BaseModel):
     errors: int
     hint: int
     player_id: int
+    public: bool
 
     class Config:
         orm_mode = True
