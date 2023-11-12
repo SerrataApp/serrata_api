@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, status, Depends
+from fastapi.exceptions import ResponseValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
@@ -104,7 +105,15 @@ def get_game(
         game_id: int,
         db: Session = Depends(get_db)
 ):
-    return crud.get_game(db=db, game_id=game_id)
+    try:
+        #TODO verifier que l'id de la partie existe
+        return crud.get_game(db=db, game_id=game_id)
+    except ResponseValidationError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La partie n'existe pas",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
 @app.get("/score/user/", response_model=list[schemas.GameInDb], tags=["scores"])
@@ -117,7 +126,7 @@ def get_games_by_user(
     except UnmappedInstanceError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="L'utilisateur' n'existe pas!",
+            detail="L'utilisateur n'existe pas!",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
