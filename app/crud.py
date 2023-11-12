@@ -1,8 +1,7 @@
 from sqlalchemy.orm import Session
 
-import bdtest
-import models
-import schemas
+
+from . import models, schemas
 
 from datetime import datetime, timedelta
 from typing import Annotated, Union
@@ -12,7 +11,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
-from get_db import get_db
+from .get_db import get_db
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
@@ -35,8 +34,21 @@ def get_password_hash(password):
 def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
 
+
 def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
+
+
+def get_user_by_id(db: Session, id: int):
+    return db.query(models.User).filter(models.User.id == id).first()
+
+
+def get_game(db: Session, game_id: int):
+    return db.query(models.Game).filter(models.Game.id == game_id).first()
+
+
+def get_games(db: Session, skip: int, limit: int):
+    return db.query(models.Game).offset(skip).limit(limit).all()
 
 
 def create_user(db: Session, user: schemas.UserInDb):
@@ -49,6 +61,34 @@ def create_user(db: Session, user: schemas.UserInDb):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    return db_user
+
+
+def create_game(db: Session, game: schemas.Game):
+    user: schemas.UserData = get_user_by_id(db=db, id=game.player_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="L'utilisateur n'existe pas",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    db_game = models.Game(
+        game_mode=game.game_mode,
+        time=game.time,
+        errors=game.errors,
+        hint=game.hint,
+        player_id=game.player_id,
+    )
+    db.add(db_game)
+    db.commit()
+    db.refresh(db_game)
+    return game
+
+
+def delete_user(db: Session, id: int):
+    db_user = get_user_by_id(db=db, id=id)
+    db.delete(db_user)
+    db.commit()
     return db_user
 
 
@@ -78,7 +118,7 @@ async def get_current_user(
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
+        detail="Impossible de valider les informations d'identification",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
@@ -101,3 +141,5 @@ async def get_current_active_user(
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+
