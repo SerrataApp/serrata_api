@@ -27,7 +27,7 @@ class UserInDb(User):
 
 class Game(BaseModel):
     game_mode: int
-    time: datetime.time
+    time: int
     errors: int
     hint: int
     player_id: int
