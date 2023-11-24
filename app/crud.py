@@ -1,10 +1,9 @@
 from sqlalchemy.orm import Session
 
-
-from . import models, schemas
-
 from datetime import datetime, timedelta
 from typing import Annotated, Union
+import os
+from dotenv import load_dotenv
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -14,11 +13,15 @@ from dotenv import load_dotenv
 import os
 
 from .get_db import get_db
+from . import models, schemas
 
 load_dotenv()
-SECRET_KEY = str(os.getenv("SSL_KEY"))
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+SEL = os.getenv("SEL")
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -26,12 +29,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+    return pwd_context.verify(plain_password + SEL, hashed_password)
 
 
 def get_password_hash(password):
-    #TODO: Faire un petit sellllllll
-    return pwd_context.hash(password)
+    return pwd_context.hash(password + SEL)
 
 
 def get_user_by_username(db: Session, username: str):

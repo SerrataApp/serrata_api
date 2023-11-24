@@ -93,7 +93,7 @@ def login_for_access_token(
             detail="Mauvais mot de passe ou nom d'utilisateur",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=crud.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=int(crud.ACCESS_TOKEN_EXPIRE_MINUTES))
     access_token = crud.create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
