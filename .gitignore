@@ -2,3 +2,4 @@ bdd.db
 __pycache__
 .venv
 .env
+sql_app.db
