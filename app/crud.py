@@ -12,13 +12,13 @@ from passlib.context import CryptContext
 from dotenv import load_dotenv
 import os
 
-from .get_db import get_db
-from . import models, schemas
+from app.get_db import get_db
+from app import models, schemas
 
 load_dotenv()
 
 
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY_JWT")
 ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 SEL = os.getenv("SEL")
@@ -57,6 +57,10 @@ def get_games(db: Session, skip: int, limit: int):
 
 def get_games_by_user(db: Session, user_id: int):
     return db.query(models.Game).filter(models.Game.player_id == user_id)
+
+def get_games_by_game_mode(db: Session, game_mode: int):
+    return db.query(models.Game).filter(models.Game.game_mode == game_mode, models.Game.public).all()
+
 
 
 def create_user(db: Session, user: schemas.UserInDb):

@@ -107,6 +107,8 @@ def get_game(
 ):
     try:
         #TODO verifier que l'id de la partie existe
+        if game_id < 0:
+            raise ResponseValidationError
         return crud.get_game(db=db, game_id=game_id)
     except ResponseValidationError:
         raise HTTPException(
@@ -176,5 +178,18 @@ def get_games(
         limit: int = 100,
         db: Session = Depends(get_db)
 ):
-    games = crud.get_games(db=db, skip=skip, limit=limit)
+    return crud.get_games(db=db, skip=skip, limit=limit)
+
+@app.get("/scores/mode/", response_model=list[schemas.GameInDb], tags=["scores"])
+def get_games_by_game_mode(
+        game_mode_id: int,
+        db: Session = Depends(get_db)
+):
+    games: schemas.GameInDb = crud.get_games_by_game_mode(db=db, game_mode=game_mode_id)
+    if not games:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Ce type de parties n'existe pas",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     return games
