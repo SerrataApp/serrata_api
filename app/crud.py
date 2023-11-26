@@ -59,7 +59,7 @@ def get_games(db: Session, skip: int, limit: int):
 
 
 def get_games_by_user(db: Session, user_id: int):
-    return db.query(models.Game).filter(models.Game.player_id == user_id, models.Game.public).all()
+    return db.query(models.Game).filter(models.Game.player_id == user_id).all()
 
 
 def get_games_by_game_mode(db: Session, game_mode: int):
