@@ -208,12 +208,6 @@ def get_games_by_game_mode(
         db: Session = Depends(get_db)
 ):
     games: schemas.GameInDb = crud.get_games_by_game_mode(db=db, game_mode=game_mode_id)
-    if not games:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Ce type de parties n'existe pas",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
     return games
 
 
@@ -225,4 +219,3 @@ def modify_game_state(
 ):
     # TODO verifier que la partie appartien bien a l'utilisateur
     return crud.change_public_state(db=db, game_id=game_id)
-
