@@ -1,31 +1,32 @@
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from datetime import datetime, timedelta
 from typing import Annotated, Union
-import os
-from dotenv import load_dotenv
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+
 from dotenv import load_dotenv
 import os
+from numpy import invert
 
 from app.get_db import get_db
 from app import models, schemas
 
 load_dotenv()
 
-
 SECRET_KEY = os.getenv("SECRET_KEY_JWT")
 ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 SEL = os.getenv("SEL")
 
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+# TODO reorganiser ce fichier en mode CRUD
 
 
 def verify_password(plain_password, hashed_password):
@@ -52,6 +53,10 @@ def get_game(db: Session, game_id: int):
     return db.query(models.Game).filter(models.Game.id == game_id).first()
 
 
+def get_game_public_state(db: Session, game_id: int):
+    return db.query(models.Game).filter(models.Game.id == game_id).first().public
+
+
 def get_games(db: Session, skip: int, limit: int):
     return db.query(models.Game).offset(skip).limit(limit).all()
 
@@ -61,7 +66,11 @@ def get_games_by_user(db: Session, user_id: int):
 def get_games_by_game_mode(db: Session, game_mode: int):
     return db.query(models.Game).filter(models.Game.game_mode == game_mode, models.Game.public).all()
 
-
+def update_public_state(db: Session, game_id: int, state: bool):
+    data = {"public": state}
+    db.execute(update(models.Game).where(models.Game.id == game_id).values(data))
+    db.commit()
+    return db.query(models.Game).filter(models.Game.id == game_id).first()
 
 def create_user(db: Session, user: schemas.UserInDb):
     hashed_password = get_password_hash(user.password)
@@ -161,4 +170,9 @@ async def get_current_active_user(
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
+
+def change_public_state(db: Session, game_id: int):
+    state: bool = get_game_public_state(db=db, game_id=game_id)
+    state = invert(state)
+    return update_public_state(db=db, game_id=game_id, state=state)
 
