@@ -36,6 +36,13 @@ async def read_users_me(
 ):
     return current_user
 
+@app.get("/users/", response_model=schemas.UserData, tags=["users"])
+async def read_user(
+        user_id: int,
+        db: Session = Depends(get_db)
+):
+    user: schemas.UserData = crud.get_user_by_id(db=db, id=user_id)
+    return user
 
 @app.delete("/users/me/", response_model=schemas.UserData, tags=["users"])
 def delete_user(
