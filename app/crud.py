@@ -38,11 +38,8 @@ def get_password_hash(password):
 
 
 def get_user_by_username(db: Session, username: str):
-    return db.query(models.User).filter(models.User.username == username).first()
-
-
-def get_user_by_email(db: Session, email: str):
-    return db.query(models.User).filter(models.User.email == email).first()
+    user: schemas.UserData = db.query(models.User).filter(models.User.username == username).first()
+    return user
 
 
 def get_user_by_id(db: Session, id: int):
@@ -60,17 +57,21 @@ def get_game_public_state(db: Session, game_id: int):
 def get_games(db: Session, skip: int, limit: int):
     return db.query(models.Game).offset(skip).limit(limit).all()
 
+
 def get_games_by_user(db: Session, user_id: int):
-    return db.query(models.Game).filter(models.Game.player_id == user_id)
+    return db.query(models.Game).filter(models.Game.player_id == user_id, models.Game.public).all()
+
 
 def get_games_by_game_mode(db: Session, game_mode: int):
     return db.query(models.Game).filter(models.Game.game_mode == game_mode, models.Game.public).all()
-
+  
+  
 def update_public_state(db: Session, game_id: int, state: bool):
     data = {"public": state}
     db.execute(update(models.Game).where(models.Game.id == game_id).values(data))
     db.commit()
     return db.query(models.Game).filter(models.Game.id == game_id).first()
+  
 
 def create_user(db: Session, user: schemas.UserInDb):
     hashed_password = get_password_hash(user.password)
@@ -105,6 +106,7 @@ def create_game(db: Session, game: schemas.Game):
     db.commit()
     db.refresh(db_game)
     return game
+
 
 def delete_game(db: Session, game_id: int):
     db_game: schemas.GameInDb = get_game(db=db, game_id=game_id)
