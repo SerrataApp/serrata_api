@@ -69,6 +69,14 @@ def delete_user(
         )
 
 
+@app.put("/users/me/game", response_model=schemas.UserData, tags=["users"])
+def modify_nb_games(
+        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
+        db: Session = Depends(get_db)
+):
+    return crud.change_nb_games(db=db, user=user)
+
+
 @app.post("/signup", response_model=schemas.UserData, tags=["users"])
 def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
     try:
@@ -215,4 +223,6 @@ def modify_game_state(
         game_id: int,
         db: Session = Depends(get_db)
 ):
+    # TODO verifier que la partie appartien bien a l'utilisateur
     return crud.change_public_state(db=db, game_id=game_id)
+
