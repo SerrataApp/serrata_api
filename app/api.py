@@ -193,6 +193,7 @@ def get_games(
 ):
     return crud.get_games(db=db, skip=skip, limit=limit)
 
+
 @app.get("/scores/mode/", response_model=list[schemas.GameInDb], tags=["scores"])
 def get_games_by_game_mode(
         game_mode_id: int,
@@ -206,3 +207,12 @@ def get_games_by_game_mode(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return games
+
+
+@app.put("/score/changeState/", response_model=schemas.GameInDb, tags=["scores"])
+def modify_game_state(
+        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
+        game_id: int,
+        db: Session = Depends(get_db)
+):
+    return crud.change_public_state(db=db, game_id=game_id)
