@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from datetime import timedelta
 from typing import Annotated
+import json
 
 
 from . import crud, models, schemas
@@ -118,13 +119,25 @@ def get_game(
         )
 
 
-@app.get("/score/user/", response_model=list[schemas.GameInDb], tags=["scores"])
+@app.get("/score/user/", response_model=schemas.UserDataWithGames, tags=["scores"])
 def get_games_by_user(
-        user_id: int,
+        username: str,
         db: Session = Depends(get_db)
 ):
+    # TODO verifier que l'id de l'utilisateur existe
     try:
-        return crud.get_games_by_user(db=db, user_id=user_id)
+        user_data = crud.get_user_by_username(db=db, username=username)
+        user_id = user_data.id
+        user_games = crud.get_games_by_user(db=db, user_id=user_id)
+
+        user_data_pydantic = schemas.UserData(**user_data.__dict__)
+
+        user_games_pydantic = [schemas.GameInDb(**game.__dict__) for game in user_games]
+
+        user_with_games = schemas.UserDataWithGames(**user_data_pydantic.dict(), games=user_games_pydantic)
+
+        return user_with_games
+
     except UnmappedInstanceError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

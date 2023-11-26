@@ -42,6 +42,10 @@ class GameInDb(Game):
     game_date: Optional[datetime.date]
 
 
+class UserDataWithGames(UserData):
+    games: List[GameInDb] = []
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str
