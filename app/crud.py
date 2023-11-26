@@ -66,11 +66,15 @@ def get_games_by_game_mode(db: Session, game_mode: int):
     return db.query(models.Game).filter(models.Game.game_mode == game_mode, models.Game.public).all()
   
   
-def update_public_state(db: Session, game_id: int, state: bool):
-    data = {"public": state}
+def update_game(db: Session, game_id: int, data: dict):
     db.execute(update(models.Game).where(models.Game.id == game_id).values(data))
     db.commit()
     return db.query(models.Game).filter(models.Game.id == game_id).first()
+
+def update_user(db: Session, user_id: int, data: dict):
+    db.execute(update(models.User).where(models.User.id == user_id).values(data))
+    db.commit()
+    return db.query(models.User).filter(models.User.id == user_id).first()
   
 
 def create_user(db: Session, user: schemas.UserInDb):
@@ -176,5 +180,12 @@ async def get_current_active_user(
 def change_public_state(db: Session, game_id: int):
     state: bool = get_game_public_state(db=db, game_id=game_id)
     state = invert(state)
-    return update_public_state(db=db, game_id=game_id, state=state)
+    data = {"public": state}
+    return update_game(db=db, game_id=game_id, data=data)
 
+
+def change_nb_games(db: Session, user: schemas.UserData):
+    nb_games: int = user.played_games
+    nb_games += 1
+    data = {"played_games": nb_games}
+    return update_user(db=db, user_id=user.id, data=data)
