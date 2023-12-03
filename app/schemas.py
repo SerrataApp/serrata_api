@@ -27,7 +27,7 @@ class UserInDb(User):
 
 class Game(BaseModel):
     game_mode: int
-    time: datetime.time
+    time: int
     errors: int
     hint: int
     player_id: int
@@ -40,6 +40,10 @@ class Game(BaseModel):
 class GameInDb(Game):
     id: Optional[int]
     game_date: Optional[datetime.date]
+
+
+class UserDataWithGames(UserData):
+    games: List[GameInDb] = []
 
 
 class Token(BaseModel):

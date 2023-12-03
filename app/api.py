@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from datetime import timedelta
 from typing import Annotated
+import json
 
 
 from . import crud, models, schemas
@@ -68,6 +69,14 @@ def delete_user(
         )
 
 
+@app.put("/users/me/game", response_model=schemas.UserData, tags=["users"])
+def modify_nb_games(
+        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
+        db: Session = Depends(get_db)
+):
+    return crud.change_nb_games(db=db, user=user)
+
+
 @app.post("/signup", response_model=schemas.UserData, tags=["users"])
 def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
     try:
@@ -107,6 +116,8 @@ def get_game(
 ):
     try:
         #TODO verifier que l'id de la partie existe
+        if game_id < 0:
+            raise ResponseValidationError
         return crud.get_game(db=db, game_id=game_id)
     except ResponseValidationError:
         raise HTTPException(
@@ -116,13 +127,25 @@ def get_game(
         )
 
 
-@app.get("/score/user/", response_model=list[schemas.GameInDb], tags=["scores"])
+@app.get("/score/user/", response_model=schemas.UserDataWithGames, tags=["scores"])
 def get_games_by_user(
-        user_id: int,
+        username: str,
         db: Session = Depends(get_db)
 ):
+    # TODO verifier que l'id de l'utilisateur existe
     try:
-        return crud.get_games_by_user(db=db, user_id=user_id)
+        user_data = crud.get_user_by_username(db=db, username=username)
+        user_id = user_data.id
+        user_games = crud.get_games_by_user(db=db, user_id=user_id)
+
+        user_data_pydantic = schemas.UserData(**user_data.__dict__)
+
+        user_games_pydantic = [schemas.GameInDb(**game.__dict__) for game in user_games]
+
+        user_with_games = schemas.UserDataWithGames(**user_data_pydantic.dict(), games=user_games_pydantic)
+
+        return user_with_games
+
     except UnmappedInstanceError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -176,5 +199,23 @@ def get_games(
         limit: int = 100,
         db: Session = Depends(get_db)
 ):
-    games = crud.get_games(db=db, skip=skip, limit=limit)
+    return crud.get_games(db=db, skip=skip, limit=limit)
+
+
+@app.get("/scores/mode/", response_model=list[schemas.GameInDb], tags=["scores"])
+def get_games_by_game_mode(
+        game_mode_id: int,
+        db: Session = Depends(get_db)
+):
+    games: schemas.GameInDb = crud.get_games_by_game_mode(db=db, game_mode=game_mode_id)
     return games
+
+
+@app.put("/score/changeState/", response_model=schemas.GameInDb, tags=["scores"])
+def modify_game_state(
+        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
+        game_id: int,
+        db: Session = Depends(get_db)
+):
+    # TODO verifier que la partie appartien bien a l'utilisateur
+    return crud.change_public_state(db=db, game_id=game_id)

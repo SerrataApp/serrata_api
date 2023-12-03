@@ -1,29 +1,32 @@
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from datetime import datetime, timedelta
 from typing import Annotated, Union
-import os
-from dotenv import load_dotenv
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
-from .get_db import get_db
-from . import models, schemas
+from dotenv import load_dotenv
+import os
+from numpy import invert
+
+from app.get_db import get_db
+from app import models, schemas
 
 load_dotenv()
 
-
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY_JWT")
 ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 SEL = os.getenv("SEL")
 
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+# TODO reorganiser ce fichier en mode CRUD
 
 
 def verify_password(plain_password, hashed_password):
@@ -35,11 +38,8 @@ def get_password_hash(password):
 
 
 def get_user_by_username(db: Session, username: str):
-    return db.query(models.User).filter(models.User.username == username).first()
-
-
-def get_user_by_email(db: Session, email: str):
-    return db.query(models.User).filter(models.User.email == email).first()
+    user: schemas.UserData = db.query(models.User).filter(models.User.username == username).first()
+    return user
 
 
 def get_user_by_id(db: Session, id: int):
@@ -50,12 +50,32 @@ def get_game(db: Session, game_id: int):
     return db.query(models.Game).filter(models.Game.id == game_id).first()
 
 
+def get_game_public_state(db: Session, game_id: int):
+    return db.query(models.Game).filter(models.Game.id == game_id).first().public
+
+
 def get_games(db: Session, skip: int, limit: int):
     return db.query(models.Game).offset(skip).limit(limit).all()
 
-def get_games_by_user(db: Session, user_id: int):
-    return db.query(models.Game).filter(models.Game.player_id == user_id)
 
+def get_games_by_user(db: Session, user_id: int):
+    return db.query(models.Game).filter(models.Game.player_id == user_id, models.Game.public).all()
+
+
+def get_games_by_game_mode(db: Session, game_mode: int):
+    return db.query(models.Game).filter(models.Game.game_mode == game_mode, models.Game.public).all()
+  
+  
+def update_game(db: Session, game_id: int, data: dict):
+    db.execute(update(models.Game).where(models.Game.id == game_id).values(data))
+    db.commit()
+    return db.query(models.Game).filter(models.Game.id == game_id).first()
+
+def update_user(db: Session, user_id: int, data: dict):
+    db.execute(update(models.User).where(models.User.id == user_id).values(data))
+    db.commit()
+    return db.query(models.User).filter(models.User.id == user_id).first()
+  
 
 def create_user(db: Session, user: schemas.UserInDb):
     hashed_password = get_password_hash(user.password)
@@ -90,6 +110,7 @@ def create_game(db: Session, game: schemas.Game):
     db.commit()
     db.refresh(db_game)
     return game
+
 
 def delete_game(db: Session, game_id: int):
     db_game: schemas.GameInDb = get_game(db=db, game_id=game_id)
@@ -156,3 +177,15 @@ async def get_current_active_user(
     return current_user
 
 
+def change_public_state(db: Session, game_id: int):
+    state: bool = get_game_public_state(db=db, game_id=game_id)
+    state = invert(state)
+    data = {"public": state}
+    return update_game(db=db, game_id=game_id, data=data)
+
+
+def change_nb_games(db: Session, user: schemas.UserData):
+    nb_games: int = user.played_games
+    nb_games += 1
+    data = {"played_games": nb_games}
+    return update_user(db=db, user_id=user.id, data=data)

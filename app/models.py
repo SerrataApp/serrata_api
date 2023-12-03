@@ -25,7 +25,7 @@ class Game(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True, unique=True, index=True)
     game_mode = Column(Integer, index=True)
-    time = Column(Time, index=True)
+    time = Column(Integer, index=True)
     errors = Column(Integer, index=True)
     hint = Column(Integer, index=True)
     game_date = Column(Date, default=datetime.date.today(), index=True)
