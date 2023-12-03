@@ -20,6 +20,7 @@ def test_signup():
 
 
 def test_get_token():
+
     response = client.post(
         "/token",
         data={
