@@ -8,8 +8,6 @@ from sqlalchemy.orm import Session
 
 from datetime import timedelta
 from typing import Annotated
-import json
-
 
 from . import crud, models, schemas
 from .database import engine
@@ -17,7 +15,7 @@ from .get_db import get_db
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(docs_url=None, redoc_url=None)
 
 app.add_middleware(
     CORSMiddleware,
