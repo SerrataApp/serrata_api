@@ -17,7 +17,7 @@ from .get_db import get_db
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(docs_url=None, redoc_url=None)
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
