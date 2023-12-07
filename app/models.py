@@ -13,7 +13,7 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     played_games = Column(Integer, default=0)
-    signup_date = Column(Date, index=True)
+    signup_date = Column(Date, default=datetime.date.today(), index=True)
     disabled = Column(Boolean, default=False, index=True)
     admin = Column(Boolean, default=False)
 
@@ -28,6 +28,6 @@ class Game(Base):
     time = Column(Integer, index=True)
     errors = Column(Integer, index=True)
     hint = Column(Integer, index=True)
-    game_date = Column(Date, index=True)
+    game_date = Column(Date, default=datetime.date.today(), index=True)
     player_id = Column(Integer, ForeignKey("users.id"))
     public = Column(Boolean, index=True)
