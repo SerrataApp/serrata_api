@@ -8,8 +8,6 @@ from sqlalchemy.orm import Session
 
 from datetime import timedelta
 from typing import Annotated
-import json
-
 
 from . import crud, models, schemas
 from .database import engine
