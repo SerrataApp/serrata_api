@@ -18,7 +18,7 @@ from app import models, schemas
 
 load_dotenv()
 
-SECRET_KEY = str(os.getenv("SECRET_KEY_JWT"))
+SECRET_KEY = os.getenv("SECRET_KEY_JWT")
 ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 SEL = os.getenv("SEL")
