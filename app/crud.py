@@ -83,6 +83,7 @@ def create_user(db: Session, user: schemas.UserInDb):
         username=user.username,
         email=user.email,
         hashed_password=hashed_password,
+        signup_date=datetime.today().date()
     )
     db.add(db_user)
     db.commit()
@@ -103,6 +104,7 @@ def create_game(db: Session, game: schemas.Game):
         time=game.time,
         errors=game.errors,
         hint=game.hint,
+        game_date=datetime.today().date(),
         player_id=game.player_id,
         public=game.public,
     )
