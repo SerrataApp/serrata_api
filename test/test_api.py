@@ -11,6 +11,7 @@ def test_signup():
         json={
             "username": "testuser",
             "email": "testuser@example.com",
+            "signup_date": "2023-12-07",
             "password": "testpassword",
         },
     )
@@ -53,6 +54,155 @@ def test_users_me():
     assert response.json()["email"] == "testuser@example.com"
 
 
+def test_add_played_game():
+    response = client.post(
+        "/token",
+        data={
+            "username": "testuser",
+            "password": "testpassword",
+        },
+    )
+    token = response.json()["access_token"]
+
+    response = client.put(
+        "/users/me/game",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()
+
+
+def test_create_game():
+    response_token = client.post(
+        "/token",
+        data={
+            "username": "testuser",
+            "password": "testpassword",
+        },
+    )
+    token = response_token.json()["access_token"]
+
+    game_data = {
+        "game_mode": 0,
+        "time": 0,
+        "errors": 0,
+        "hint": 0,
+        "game_date": "2023-12-07",
+        "player_id": 1,
+        "public": True,
+    }
+
+    response_create_game = client.post(
+        "/score/",
+        json=game_data,
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response_create_game.status_code == 200
+    created_game = response_create_game.json()
+
+    assert created_game["game_mode"] == game_data["game_mode"]
+    assert created_game["time"] == game_data["time"]
+    assert created_game["errors"] == game_data["errors"]
+    assert created_game["hint"] == game_data["hint"]
+    assert created_game["game_date"] == game_data["game_date"]
+    assert created_game["player_id"] == game_data["player_id"]
+    assert created_game["public"] == game_data["public"]
+
+
+def test_get_game():
+    response_get_game = client.get(
+        "/score/?game_id=1",
+    )
+
+    assert response_get_game.status_code == 200
+    assert response_get_game.json()
+
+
+def test_get_games_by_user():
+    response_token = client.post(
+        "/token",
+        data={
+            "username": "testuser",
+            "password": "testpassword",
+        },
+    )
+    token = response_token.json()["access_token"]
+
+    response_get_games = client.get(
+        "/score/user/?username=testuser",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response_get_games.status_code == 200
+    assert response_get_games.json()
+
+
+def test_delete_game():
+    admin_response_token = client.post(
+        "/token",
+        data={
+            "username": "testuser",
+            "password": "testpassword",
+        },
+    )
+    admin_token = admin_response_token.json()["access_token"]
+
+    delete_game_response = client.delete(
+        f"/score/?game_id=1",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+
+    assert delete_game_response.status_code == 401
+
+
+def test_get_games():
+    response = client.get(
+        "/scores/?skip=0&limit=100"
+    )
+
+    assert response.status_code == 200
+    assert response.json()
+
+
+def test_get_games_by_gamemode():
+    response = client.get(
+        "/scores/mode/?game_mode_id=0"
+    )
+
+    assert response.status_code == 200
+    assert response.json()
+
+
+def test_change_stage_game():
+    response_token = client.post(
+        "/token",
+        data={
+            "username": "testuser",
+            "password": "testpassword",
+        },
+    )
+    token = response_token.json()["access_token"]
+
+    response_get_game = client.get(
+        "/score/?game_id=1",
+
+    )
+
+    etat1 = response_get_game.json()["public"]
+
+    response = client.put(
+        "/score/changeState/?game_id=1",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()
+    etat2 = response.json()["public"]
+    assert etat1 != etat2
+
+
 def test_delete_user_me():
     response = client.post(
         "/token",
@@ -79,6 +229,7 @@ def test_delete_user():
         json={
             "username": "testuser",
             "email": "testuser@example.com",
+            "signup_date": "2023-12-07",
             "password": "testpassword",
         },
     )
