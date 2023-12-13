@@ -1,4 +1,4 @@
-from sqlalchemy import update
+from sqlalchemy import update, or_
 from sqlalchemy.orm import Session
 
 from datetime import datetime, timedelta
@@ -39,6 +39,11 @@ def get_password_hash(password):
 
 def get_user_by_username(db: Session, username: str):
     user: schemas.UserData = db.query(models.User).filter(models.User.username == username).first()
+    return user
+
+
+def get_user_by_username_or_email(db: Session, username: str):
+    user: schemas.UserData = db.query(models.User).filter(or_(models.User.username == username, models.User.email == username)).first()
     return user
 
 
@@ -129,7 +134,7 @@ def delete_user(db: Session, id: int):
 
 
 def authenticate_user(db: Session, username: str, password: str):
-    user = get_user_by_username(db=db, username=username)
+    user = get_user_by_username_or_email(db=db, username=username)
     if not user:
         return False
     if not verify_password(password, user.hashed_password):
