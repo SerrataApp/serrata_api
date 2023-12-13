@@ -31,4 +31,4 @@ jobs:
     - name: Run tests
       run: |
         source venv/bin/activate
-        pytest /home/runner/work/serrata_api/serrata_api/test/test_api.py
+        pytest /home/runner/work/serrata_api/serrata_api/app/test/test_api.py
