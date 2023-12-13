@@ -12,7 +12,6 @@ from passlib.context import CryptContext
 
 from dotenv import load_dotenv
 import os
-from numpy import invert
 
 from app.get_db import get_db
 from app import models, schemas
@@ -205,7 +204,10 @@ async def get_current_active_user(
 
 def change_public_state(db: Session, game_id: int):
     state: bool = get_game_public_state(db=db, game_id=game_id)
-    state = invert(state)
+    if state:
+        state = False
+    else:
+        state = True
     data = {"public": state}
     return update_game(db=db, game_id=game_id, data=data)
 
