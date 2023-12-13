@@ -24,7 +24,7 @@ jobs:
         docker buildx create --use
         docker buildx build \
           --file Dockerfile \
-          --tag <docker-hub-user-name>/<docker-hub-respository-name>:latest \
+          --tag tang0ch4rlie/apiserrata:latest \
           --push .
 
     env:
