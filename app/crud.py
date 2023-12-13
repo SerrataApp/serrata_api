@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from datetime import datetime, timedelta
 from typing import Annotated, Union
+from email_validator import validate_email, EmailNotValidError
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -26,6 +27,7 @@ SEL = os.getenv("SEL")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+
 # TODO reorganiser ce fichier en mode CRUD
 
 
@@ -43,7 +45,8 @@ def get_user_by_username(db: Session, username: str):
 
 
 def get_user_by_username_or_email(db: Session, username: str):
-    user: schemas.UserData = db.query(models.User).filter(or_(models.User.username == username, models.User.email == username)).first()
+    user: schemas.UserData = db.query(models.User).filter(
+        or_(models.User.username == username, models.User.email == username)).first()
     return user
 
 
@@ -69,20 +72,36 @@ def get_games_by_user(db: Session, user_id: int):
 
 def get_games_by_game_mode(db: Session, game_mode: int):
     return db.query(models.Game).filter(models.Game.game_mode == game_mode, models.Game.public).all()
-  
-  
+
+
 def update_game(db: Session, game_id: int, data: dict):
     db.execute(update(models.Game).where(models.Game.id == game_id).values(data))
     db.commit()
     return db.query(models.Game).filter(models.Game.id == game_id).first()
 
+
 def update_user(db: Session, user_id: int, data: dict):
     db.execute(update(models.User).where(models.User.id == user_id).values(data))
     db.commit()
     return db.query(models.User).filter(models.User.id == user_id).first()
-  
+
+
+def verify_format_email(email: str):
+    try:
+        validate_email(email)
+        return True
+    except EmailNotValidError as e:
+        print(str(e))
+        return False
+
 
 def create_user(db: Session, user: schemas.UserInDb):
+    if not verify_format_email(user.email):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="L'email n'est pas dans un format valide",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     hashed_password = get_password_hash(user.password)
     db_user = models.User(
         username=user.username,
@@ -177,7 +196,7 @@ async def get_current_user(
 
 
 async def get_current_active_user(
-    current_user: Annotated[schemas.UserData, Depends(get_current_user)]
+        current_user: Annotated[schemas.UserData, Depends(get_current_user)]
 ):
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
