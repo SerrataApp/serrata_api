@@ -10,14 +10,14 @@ def test_signup():
         "/signup",
         json={
             "username": "testuser",
-            "email": "testuser@example.com",
+            "email": "testuser@gmail.com",
             "signup_date": "2023-12-07",
             "password": "testpassword",
         },
     )
     assert response.status_code == 200
     assert response.json()["username"] == "testuser"
-    assert response.json()["email"] == "testuser@example.com"
+    assert response.json()["email"] == "testuser@gmail.com"
 
 
 def test_get_token():
@@ -51,7 +51,7 @@ def test_users_me():
 
     assert response.status_code == 200
     assert response.json()["username"] == "testuser"
-    assert response.json()["email"] == "testuser@example.com"
+    assert response.json()["email"] == "testuser@gmail.com"
 
 
 def test_add_played_game():
@@ -220,7 +220,7 @@ def test_delete_user_me():
 
     assert response.status_code == 200
     assert response.json()["username"] == "testuser"
-    assert response.json()["email"] == "testuser@example.com"
+    assert response.json()["email"] == "testuser@gmail.com"
 
 
 def test_delete_user():
@@ -228,7 +228,7 @@ def test_delete_user():
         "/signup",
         json={
             "username": "testuser",
-            "email": "testuser@example.com",
+            "email": "testuser@gmail.com",
             "signup_date": "2023-12-07",
             "password": "testpassword",
         },
