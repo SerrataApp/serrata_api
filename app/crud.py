@@ -145,6 +145,9 @@ def delete_game(db: Session, game_id: int):
 
 
 def delete_user(db: Session, id: int):
+    db_games = get_games_by_user(db=db, user_id=id)
+    for game in db_games:
+      delete_game(db=db, game_id=game.id)
     db_user = get_user_by_id(db=db, id=id)
     db.delete(db_user)
     db.commit()
