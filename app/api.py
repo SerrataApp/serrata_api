@@ -239,7 +239,7 @@ def modify_game_state(
 
 # DASHBOARD ADMIN
 
-@app.put("/disable/", response_model=schemas.UserData, tags=["admin"])
+@app.put("/admindisable/", response_model=schemas.UserData, tags=["admin"])
 def disable_user(
         user: Annotated[schemas.UserData, Depends(crud.get_current_user)],
         user_id: int,
@@ -253,5 +253,21 @@ def disable_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Vous n'avez pas les droits pour desactiver un utilisateur!",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+@app.get("/adminusers/", response_model=schemas.UserPersonalInfo, tags=["admin"])
+def get_user_by_admin(
+        user: Annotated[schemas.UserData, Depends(crud.get_current_user)],
+        user_id: int,
+        db: Session = Depends(get_db)
+):
+    if user.admin:
+        return crud.get_user_by_id(db=db, id=user_id)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Vous n'avez pas les droits pour récupérer les données d'un utilisateur!",
             headers={"WWW-Authenticate": "Bearer"},
         )
