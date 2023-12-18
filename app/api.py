@@ -85,7 +85,7 @@ def modify_nb_games(
 
 
 @app.post("/signup", response_model=schemas.UserPersonalInfo, tags=["users"])
-def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
+def signup_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     try:
         user: schemas.UserInDb = crud.create_user(db=db, user=user)
         return user

@@ -3,6 +3,16 @@ from typing import List, Union, Optional
 from pydantic import BaseModel
 
 
+class UserCreate(BaseModel):
+    username: str
+    email: str
+    password: str
+    signup_date: datetime.date
+
+    class Config:
+        orm_mode = True
+
+
 class User(BaseModel):
     username: str
 
@@ -13,13 +23,13 @@ class User(BaseModel):
 class UserData(User):
     id: int
     played_games: int
-    disabled: bool
-    admin: bool
 
 
 class UserPersonalInfo(UserData):
     email: str
     signup_date: datetime.date
+    disabled: bool
+    admin: bool
 
 
 class UserInDb(UserPersonalInfo):
