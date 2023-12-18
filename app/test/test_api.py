@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
 
+import sqlite3 as lite
+
 from app.api import app
 
 client = TestClient(app)
@@ -146,6 +148,12 @@ def test_delete_game():
         },
     )
     admin_token = admin_response_token.json()["access_token"]
+    #
+    # con = lite.connect('sql_app.db')
+    #
+    # with con:
+    #     cur = con.cursor()
+    #     cur.execute("UPDATE users SET admin = 1 WHERE id = 2")
 
     delete_game_response = client.delete(
         f"/score/?game_id=1",
@@ -185,7 +193,6 @@ def test_change_stage_game():
 
     response_get_game = client.get(
         "/score/?game_id=1",
-
     )
 
     etat1 = response_get_game.json()["public"]
@@ -199,6 +206,44 @@ def test_change_stage_game():
     assert response.json()
     etat2 = response.json()["public"]
     assert etat1 != etat2
+
+
+def test_disable():
+    response_token = client.post(
+        "/token",
+        data={
+            "username": "testuser",
+            "password": "testpassword",
+        },
+    )
+    token = response_token.json()["access_token"]
+
+    response = client.put(
+        "/admindisable/?user_id=1",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 401
+    assert response.json()
+
+
+def test_get_userdata():
+    response_token = client.post(
+        "/token",
+        data={
+            "username": "testuser",
+            "password": "testpassword",
+        },
+    )
+    token = response_token.json()["access_token"]
+
+    response = client.get(
+        "/adminusers/?user_id=1",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 401
+    assert response.json()
 
 
 def test_delete_user_me():
