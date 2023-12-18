@@ -17,7 +17,6 @@ def test_signup():
     )
     assert response.status_code == 200
     assert response.json()["username"] == "testuser"
-    assert response.json()["email"] == "testuser@gmail.com"
 
 
 def test_get_token():
@@ -51,7 +50,6 @@ def test_users_me():
 
     assert response.status_code == 200
     assert response.json()["username"] == "testuser"
-    assert response.json()["email"] == "testuser@gmail.com"
 
 
 def test_add_played_game():
@@ -220,7 +218,6 @@ def test_delete_user_me():
 
     assert response.status_code == 200
     assert response.json()["username"] == "testuser"
-    assert response.json()["email"] == "testuser@gmail.com"
 
 
 def test_delete_user():

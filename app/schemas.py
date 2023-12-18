@@ -5,10 +5,6 @@ from pydantic import BaseModel
 
 class User(BaseModel):
     username: str
-    email: str
-    signup_date: datetime.date
-
-    #wonGames: List['Game'] = []
 
     class Config:
         orm_mode = True
@@ -21,7 +17,12 @@ class UserData(User):
     admin: bool
 
 
-class UserInDb(User):
+class UserPersonalInfo(User):
+    email: str
+    signup_date: datetime.date
+
+
+class UserInDb(UserPersonalInfo):
     password: str
 
 

@@ -231,3 +231,23 @@ def modify_game_state(
             detail="Vous n'avez pas les droits pour changer l'état d'une partie qui ne vous appartien pas!",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+# DASHBOARD ADMIN
+
+@app.put("/disable/", response_model=schemas.UserData, tags=["admin"])
+def disable_user(
+        user: Annotated[schemas.UserData, Depends(crud.get_current_user)],
+        user_id: int,
+        db: Session = Depends(get_db)
+):
+    if user.admin:
+        selected_user = crud.get_user_by_id(db=db, id=user_id)
+        if selected_user is not None:
+            return crud.disable_user(db=db, user=selected_user)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Vous n'avez pas les droits pour desactiver un utilisateur!",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
