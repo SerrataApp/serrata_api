@@ -28,11 +28,12 @@ app.add_middleware(
 database = r"bdd.db"
 
 
-@app.get("/users/me/", response_model=schemas.UserData, tags=["users"])
+@app.get("/users/me/", response_model=schemas.UserPersonalInfo, tags=["users"])
 async def read_users_me(
         current_user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)]
 ):
     return current_user
+
 
 @app.get("/users/", response_model=schemas.UserData, tags=["users"])
 async def read_user(
@@ -41,6 +42,7 @@ async def read_user(
 ):
     user: schemas.UserData = crud.get_user_by_id(db=db, id=user_id)
     return user
+
 
 @app.delete("/users/me/", response_model=schemas.UserData, tags=["users"])
 def delete_user(
@@ -82,7 +84,7 @@ def modify_nb_games(
     return crud.change_nb_games(db=db, user=user)
 
 
-@app.post("/signup", response_model=schemas.UserData, tags=["users"])
+@app.post("/signup", response_model=schemas.UserPersonalInfo, tags=["users"])
 def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
     try:
         user: schemas.UserInDb = crud.create_user(db=db, user=user)
@@ -120,7 +122,7 @@ def get_game(
         db: Session = Depends(get_db)
 ):
     try:
-        #TODO verifier que l'id de la partie existe
+        # TODO verifier que l'id de la partie existe
         if game_id < 0:
             raise ResponseValidationError
         return crud.get_game(db=db, game_id=game_id)

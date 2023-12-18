@@ -17,7 +17,7 @@ class UserData(User):
     admin: bool
 
 
-class UserPersonalInfo(User):
+class UserPersonalInfo(UserData):
     email: str
     signup_date: datetime.date
 
