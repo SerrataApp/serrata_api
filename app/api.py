@@ -279,3 +279,18 @@ def get_user_by_admin(
             detail="Vous n'avez pas les droits pour récupérer les données d'un utilisateur!",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+@app.get("/admincgu/", response_model=bool, tags=["admin"])
+def get_user_by_admin(
+        user: Annotated[schemas.UserPersonalInfo, Depends(crud.get_current_user)],
+        db: Session = Depends(get_db)
+):
+    if user.admin:
+        return crud.set_false_all_cgu(db=db)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Vous n'avez pas les droits de modifier les données d'un utilisateur!",
+            headers={"WWW-Authenticate": "Bearer"},
+        )

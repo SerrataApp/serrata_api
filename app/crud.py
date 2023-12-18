@@ -147,7 +147,7 @@ def delete_game(db: Session, game_id: int):
 def delete_user(db: Session, id: int):
     db_games = get_games_by_user(db=db, user_id=id)
     for game in db_games:
-      delete_game(db=db, game_id=game.id)
+        delete_game(db=db, game_id=game.id)
     db_user = get_user_by_id(db=db, id=id)
     db.delete(db_user)
     db.commit()
@@ -239,3 +239,18 @@ def chage_cgu(db: Session, user: schemas.UserPersonalInfo):
         state = True
     data = {"cgu": state}
     return update_user(db=db, user_id=user.id, data=data)
+
+
+def set_false_all_cgu(db: Session):
+    try:
+        all_users = db.query(models.User).all()
+        data = {"cgu": False}
+        for user in all_users:
+            update_user(db=db, user_id=user.id, data=data)
+        return True
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Une erreur est survenue",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
