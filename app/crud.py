@@ -220,3 +220,13 @@ def change_nb_games(db: Session, user: schemas.UserData):
     nb_games += 1
     data = {"played_games": nb_games}
     return update_user(db=db, user_id=user.id, data=data)
+
+
+def disable_user(db: Session, user: schemas.UserData):
+    user: schemas.UserData = get_user_by_id(db=db, id=user.id)
+    if user.disabled:
+        state = False
+    else:
+        state = True
+    data = {"disabled": state}
+    return update_user(db=db, user_id=user.id, data=data)
