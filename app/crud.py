@@ -198,7 +198,7 @@ async def get_current_user(
 
 
 async def get_current_active_user(
-        current_user: Annotated[schemas.UserData, Depends(get_current_user)]
+        current_user: Annotated[schemas.UserPersonalInfo, Depends(get_current_user)]
 ):
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
@@ -222,11 +222,20 @@ def change_nb_games(db: Session, user: schemas.UserData):
     return update_user(db=db, user_id=user.id, data=data)
 
 
-def disable_user(db: Session, user: schemas.UserData):
+def disable_user(db: Session, user: schemas.UserPersonalInfo):
     user: schemas.UserData = get_user_by_id(db=db, id=user.id)
     if user.disabled:
         state = False
     else:
         state = True
     data = {"disabled": state}
+    return update_user(db=db, user_id=user.id, data=data)
+
+
+def chage_cgu(db: Session, user: schemas.UserPersonalInfo):
+    if user.cgu:
+        state = False
+    else:
+        state = True
+    data = {"cgu": state}
     return update_user(db=db, user_id=user.id, data=data)

@@ -22,7 +22,6 @@ def test_signup():
 
 
 def test_get_token():
-
     response = client.post(
         "/token",
         data={
@@ -224,6 +223,25 @@ def test_disable():
     )
 
     assert response.status_code == 401
+    assert response.json()
+
+
+def test_cgu():
+    response_token = client.post(
+        "/token",
+        data={
+            "username": "testuser",
+            "password": "testpassword",
+        },
+    )
+    token = response_token.json()["access_token"]
+
+    response = client.put(
+        "/users/me/cgu/",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
     assert response.json()
 
 
