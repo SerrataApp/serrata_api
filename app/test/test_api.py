@@ -263,6 +263,8 @@ def test_get_userdata():
     assert response.status_code == 401
     assert response.json()
 
+# tester admincgu
+
 
 def test_delete_user_me():
     response = client.post(
