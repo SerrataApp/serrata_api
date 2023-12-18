@@ -207,6 +207,12 @@ async def get_current_active_user(
 
 def change_public_state(db: Session, game_id: int):
     state: bool = get_game_public_state(db=db, game_id=game_id)
+
+    games = db.query(models.Game)
+    data = {"public": False}
+    for game in games:
+        update_game(db=db, game_id=game.id, data=data)
+
     if state:
         state = False
     else:

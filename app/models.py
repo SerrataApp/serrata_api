@@ -30,4 +30,4 @@ class Game(Base):
     hint = Column(Integer, index=True)
     game_date = Column(Date, index=True)
     player_id = Column(Integer, ForeignKey("users.id"))
-    public = Column(Boolean, index=True)
+    public = Column(Boolean, index=False)
