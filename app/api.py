@@ -226,9 +226,11 @@ def modify_game_state(
     if game.player_id == user.id:
         return crud.change_public_state(db=db, game_id=game_id)
     else:
+        if user.admin:
+            return crud.change_public_state(db=db, game_id=game_id)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Vous n'avez pas les droits pour changer l'état d'une partie qui ne vous appartien pas!",
+            detail="Vous n'avez pas les droits pour changer l'état d'une partie!",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
