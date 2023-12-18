@@ -34,6 +34,7 @@ async def read_users_me(
 ):
     return current_user
 
+
 @app.get("/users/", response_model=schemas.UserData, tags=["users"])
 async def read_user(
         user_id: int,
@@ -41,6 +42,7 @@ async def read_user(
 ):
     user: schemas.UserData = crud.get_user_by_id(db=db, id=user_id)
     return user
+
 
 @app.delete("/users/me/", response_model=schemas.UserData, tags=["users"])
 def delete_user(
@@ -120,7 +122,7 @@ def get_game(
         db: Session = Depends(get_db)
 ):
     try:
-        #TODO verifier que l'id de la partie existe
+        # TODO verifier que l'id de la partie existe
         if game_id < 0:
             raise ResponseValidationError
         return crud.get_game(db=db, game_id=game_id)
