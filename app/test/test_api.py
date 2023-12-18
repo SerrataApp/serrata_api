@@ -219,7 +219,26 @@ def test_disable():
     token = response_token.json()["access_token"]
 
     response = client.put(
-        "/disable/?user_id=1",
+        "/admindisable/?user_id=1",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 401
+    assert response.json()
+
+
+def test_get_userdata():
+    response_token = client.post(
+        "/token",
+        data={
+            "username": "testuser",
+            "password": "testpassword",
+        },
+    )
+    token = response_token.json()["access_token"]
+
+    response = client.get(
+        "/adminusers/?user_id=1",
         headers={"Authorization": f"Bearer {token}"},
     )
 
