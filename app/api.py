@@ -54,7 +54,7 @@ def delete_user(
 
 @app.delete("/users/", response_model=schemas.UserData, tags=["users"])
 def delete_user(
-        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
+        user: Annotated[schemas.UserPersonalInfo, Depends(crud.get_current_active_user)],
         user_id: int,
         db: Session = Depends(get_db)
 ):
@@ -82,6 +82,14 @@ def modify_nb_games(
         db: Session = Depends(get_db)
 ):
     return crud.change_nb_games(db=db, user=user)
+
+
+@app.put("/users/me/cgu", response_model=schemas.User, tags=["users"])
+def modify_cgu(
+        user: Annotated[schemas.UserPersonalInfo, Depends(crud.get_current_active_user)],
+        db: Session = Depends(get_db)
+):
+    return crud.chage_cgu(db=db, user=user)
 
 
 @app.post("/signup", response_model=schemas.UserPersonalInfo, tags=["users"])
@@ -179,7 +187,7 @@ def create_game(
 
 @app.delete("/score/", response_model=schemas.GameInDb, tags=["scores"])
 def delete_game(
-        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
+        user: Annotated[schemas.UserPersonalInfo, Depends(crud.get_current_active_user)],
         game_id: int,
         db: Session = Depends(get_db)
 ):
@@ -220,7 +228,7 @@ def get_games_by_game_mode(
 
 @app.put("/score/changeState/", response_model=schemas.GameInDb, tags=["scores"])
 def modify_game_state(
-        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
+        user: Annotated[schemas.UserPersonalInfo, Depends(crud.get_current_active_user)],
         game_id: int,
         db: Session = Depends(get_db)
 ):
@@ -241,7 +249,7 @@ def modify_game_state(
 
 @app.put("/admindisable/", response_model=schemas.UserData, tags=["admin"])
 def disable_user(
-        user: Annotated[schemas.UserData, Depends(crud.get_current_user)],
+        user: Annotated[schemas.UserPersonalInfo, Depends(crud.get_current_user)],
         user_id: int,
         db: Session = Depends(get_db)
 ):
@@ -259,7 +267,7 @@ def disable_user(
 
 @app.get("/adminusers/", response_model=schemas.UserPersonalInfo, tags=["admin"])
 def get_user_by_admin(
-        user: Annotated[schemas.UserData, Depends(crud.get_current_user)],
+        user: Annotated[schemas.UserPersonalInfo, Depends(crud.get_current_user)],
         user_id: int,
         db: Session = Depends(get_db)
 ):
@@ -269,5 +277,20 @@ def get_user_by_admin(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Vous n'avez pas les droits pour récupérer les données d'un utilisateur!",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+@app.get("/admincgu/", response_model=bool, tags=["admin"])
+def get_user_by_admin(
+        user: Annotated[schemas.UserPersonalInfo, Depends(crud.get_current_user)],
+        db: Session = Depends(get_db)
+):
+    if user.admin:
+        return crud.set_false_all_cgu(db=db)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Vous n'avez pas les droits de modifier les données d'un utilisateur!",
             headers={"WWW-Authenticate": "Bearer"},
         )

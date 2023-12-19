@@ -30,6 +30,7 @@ class UserPersonalInfo(UserData):
     signup_date: datetime.date
     disabled: bool
     admin: bool
+    cgu: bool
 
 
 class UserInDb(UserPersonalInfo):
