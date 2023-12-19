@@ -207,6 +207,12 @@ async def get_current_active_user(
 
 def change_public_state(db: Session, game_id: int):
     state: bool = get_game_public_state(db=db, game_id=game_id)
+
+    games = db.query(models.Game)
+    data = {"public": False}
+    for game in games:
+        update_game(db=db, game_id=game.id, data=data)
+
     if state:
         state = False
     else:
@@ -219,4 +225,14 @@ def change_nb_games(db: Session, user: schemas.UserData):
     nb_games: int = user.played_games
     nb_games += 1
     data = {"played_games": nb_games}
+    return update_user(db=db, user_id=user.id, data=data)
+
+
+def disable_user(db: Session, user: schemas.UserData):
+    user: schemas.UserData = get_user_by_id(db=db, id=user.id)
+    if user.disabled:
+        state = False
+    else:
+        state = True
+    data = {"disabled": state}
     return update_user(db=db, user_id=user.id, data=data)
