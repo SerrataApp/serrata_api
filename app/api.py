@@ -28,7 +28,7 @@ app.add_middleware(
 database = r"bdd.db"
 
 
-@app.get("/users/me/", response_model=schemas.UserData, tags=["users"])
+@app.get("/users/me/", response_model=schemas.UserPersonalInfo, tags=["users"])
 async def read_users_me(
         current_user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)]
 ):
@@ -84,8 +84,8 @@ def modify_nb_games(
     return crud.change_nb_games(db=db, user=user)
 
 
-@app.post("/signup", response_model=schemas.UserData, tags=["users"])
-def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
+@app.post("/signup", response_model=schemas.UserPersonalInfo, tags=["users"])
+def signup_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     try:
         user: schemas.UserInDb = crud.create_user(db=db, user=user)
         return user
@@ -228,8 +228,46 @@ def modify_game_state(
     if game.player_id == user.id:
         return crud.change_public_state(db=db, game_id=game_id)
     else:
+        if user.admin:
+            return crud.change_public_state(db=db, game_id=game_id)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Vous n'avez pas les droits pour changer l'état d'une partie qui ne vous appartien pas!",
+            detail="Vous n'avez pas les droits pour changer l'état d'une partie!",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+# DASHBOARD ADMIN
+
+@app.put("/admindisable/", response_model=schemas.UserData, tags=["admin"])
+def disable_user(
+        user: Annotated[schemas.UserData, Depends(crud.get_current_user)],
+        user_id: int,
+        db: Session = Depends(get_db)
+):
+    if user.admin:
+        selected_user = crud.get_user_by_id(db=db, id=user_id)
+        if selected_user is not None:
+            return crud.disable_user(db=db, user=selected_user)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Vous n'avez pas les droits pour desactiver un utilisateur!",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+@app.get("/adminusers/", response_model=schemas.UserPersonalInfo, tags=["admin"])
+def get_user_by_admin(
+        user: Annotated[schemas.UserData, Depends(crud.get_current_user)],
+        user_id: int,
+        db: Session = Depends(get_db)
+):
+    if user.admin:
+        return crud.get_user_by_id(db=db, id=user_id)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Vous n'avez pas les droits pour récupérer les données d'un utilisateur!",
             headers={"WWW-Authenticate": "Bearer"},
         )
