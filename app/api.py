@@ -30,7 +30,7 @@ database = r"bdd.db"
 
 @app.get("/users/me/", response_model=schemas.UserPersonalInfo, tags=["users"])
 async def read_users_me(
-        current_user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)]
+        current_user: Annotated[schemas.UserData, Depends(crud.get_current_user)]
 ):
     return current_user
 
@@ -46,7 +46,7 @@ async def read_user(
 
 @app.delete("/users/me/", response_model=schemas.UserData, tags=["users"])
 def delete_user(
-        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
+        user: Annotated[schemas.UserData, Depends(crud.get_current_user)],
         db: Session = Depends(get_db)
 ):
     return crud.delete_user(db=db, id=user.id)
@@ -54,7 +54,7 @@ def delete_user(
 
 @app.delete("/users/", response_model=schemas.UserData, tags=["users"])
 def delete_user(
-        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
+        user: Annotated[schemas.UserData, Depends(crud.get_current_user)],
         user_id: int,
         db: Session = Depends(get_db)
 ):
@@ -78,7 +78,7 @@ def delete_user(
 
 @app.put("/users/me/game", response_model=schemas.UserData, tags=["users"])
 def modify_nb_games(
-        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
+        user: Annotated[schemas.UserData, Depends(crud.get_current_user)],
         db: Session = Depends(get_db)
 ):
     return crud.change_nb_games(db=db, user=user)
@@ -179,7 +179,7 @@ def create_game(
 
 @app.delete("/score/", response_model=schemas.GameInDb, tags=["scores"])
 def delete_game(
-        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
+        user: Annotated[schemas.UserData, Depends(crud.get_current_user)],
         game_id: int,
         db: Session = Depends(get_db)
 ):
@@ -220,7 +220,7 @@ def get_games_by_game_mode(
 
 @app.put("/score/changeState/", response_model=schemas.GameInDb, tags=["scores"])
 def modify_game_state(
-        user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)],
+        user: Annotated[schemas.UserData, Depends(crud.get_current_user)],
         game_id: int,
         db: Session = Depends(get_db)
 ):
