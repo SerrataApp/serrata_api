@@ -54,7 +54,6 @@ def delete_user(
 
 @app.delete("/users/", response_model=schemas.UserData, tags=["users"])
 def delete_user(
-        user: Annotated[schemas.UserData, Depends(crud.get_current_user)],
         user: Annotated[schemas.UserPersonalInfo, Depends(crud.get_current_active_user)],
         user_id: int,
         db: Session = Depends(get_db)
