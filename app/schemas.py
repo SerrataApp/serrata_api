@@ -23,11 +23,11 @@ class User(BaseModel):
 class UserData(User):
     id: int
     played_games: int
+    signup_date: datetime.date
 
 
 class UserPersonalInfo(UserData):
     email: str
-    signup_date: datetime.date
     disabled: bool
     admin: bool
 
