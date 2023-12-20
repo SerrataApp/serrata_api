@@ -209,7 +209,8 @@ def change_public_state(db: Session, game_id: int):
     state: bool = get_game_public_state(db=db, game_id=game_id)
 
     game_mode = get_game(db=db, game_id=game_id).game_mode
-    games = db.query(models.Game).filter(models.Game.game_mode==game_mode)
+    player_id = get_game(db=db, game_id=game_id).player_id
+    games = db.query(models.Game).filter(models.Game.game_mode==game_mode and models.Game.player_id==player_id)
     data = {"public": False}
     for game in games:
         update_game(db=db, game_id=game.id, data=data)
