@@ -3,11 +3,18 @@ from typing import List, Union, Optional
 from pydantic import BaseModel
 
 
-class User(BaseModel):
+class UserCreate(BaseModel):
     username: str
     email: str
+    password: str
+    signup_date: datetime.date
 
-    #wonGames: List['Game'] = []
+    class Config:
+        orm_mode = True
+
+
+class User(BaseModel):
+    username: str
 
     class Config:
         orm_mode = True
@@ -16,12 +23,16 @@ class User(BaseModel):
 class UserData(User):
     id: int
     played_games: int
+
+
+class UserPersonalInfo(UserData):
+    email: str
     signup_date: datetime.date
     disabled: bool
     admin: bool
 
 
-class UserInDb(User):
+class UserInDb(UserPersonalInfo):
     password: str
 
 
@@ -30,6 +41,7 @@ class Game(BaseModel):
     time: int
     errors: int
     hint: int
+    game_date: datetime.date
     player_id: int
     public: bool
 

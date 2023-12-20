@@ -1,8 +1,9 @@
-from sqlalchemy import update
+from sqlalchemy import update, or_
 from sqlalchemy.orm import Session
 
 from datetime import datetime, timedelta
 from typing import Annotated, Union
+from email_validator import validate_email, EmailNotValidError
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -11,7 +12,6 @@ from passlib.context import CryptContext
 
 from dotenv import load_dotenv
 import os
-from numpy import invert
 
 from app.get_db import get_db
 from app import models, schemas
@@ -26,6 +26,7 @@ SEL = os.getenv("SEL")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+
 # TODO reorganiser ce fichier en mode CRUD
 
 
@@ -39,6 +40,12 @@ def get_password_hash(password):
 
 def get_user_by_username(db: Session, username: str):
     user: schemas.UserData = db.query(models.User).filter(models.User.username == username).first()
+    return user
+
+
+def get_user_by_username_or_email(db: Session, username: str):
+    user: schemas.UserData = db.query(models.User).filter(
+        or_(models.User.username == username, models.User.email == username)).first()
     return user
 
 
@@ -64,25 +71,42 @@ def get_games_by_user(db: Session, user_id: int):
 
 def get_games_by_game_mode(db: Session, game_mode: int):
     return db.query(models.Game).filter(models.Game.game_mode == game_mode, models.Game.public).all()
-  
-  
+
+
 def update_game(db: Session, game_id: int, data: dict):
     db.execute(update(models.Game).where(models.Game.id == game_id).values(data))
     db.commit()
     return db.query(models.Game).filter(models.Game.id == game_id).first()
 
+
 def update_user(db: Session, user_id: int, data: dict):
     db.execute(update(models.User).where(models.User.id == user_id).values(data))
     db.commit()
     return db.query(models.User).filter(models.User.id == user_id).first()
-  
+
+
+def verify_format_email(email: str):
+    try:
+        validate_email(email)
+        return True
+    except EmailNotValidError as e:
+        print(str(e))
+        return False
+
 
 def create_user(db: Session, user: schemas.UserInDb):
+    if not verify_format_email(user.email):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="L'email n'est pas dans un format valide",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     hashed_password = get_password_hash(user.password)
     db_user = models.User(
         username=user.username,
         email=user.email,
         hashed_password=hashed_password,
+        signup_date=datetime.today().date()
     )
     db.add(db_user)
     db.commit()
@@ -103,6 +127,7 @@ def create_game(db: Session, game: schemas.Game):
         time=game.time,
         errors=game.errors,
         hint=game.hint,
+        game_date=datetime.today().date(),
         player_id=game.player_id,
         public=game.public,
     )
@@ -120,6 +145,9 @@ def delete_game(db: Session, game_id: int):
 
 
 def delete_user(db: Session, id: int):
+    db_games = get_games_by_user(db=db, user_id=id)
+    for game in db_games:
+      delete_game(db=db, game_id=game.id)
     db_user = get_user_by_id(db=db, id=id)
     db.delete(db_user)
     db.commit()
@@ -127,7 +155,7 @@ def delete_user(db: Session, id: int):
 
 
 def authenticate_user(db: Session, username: str, password: str):
-    user = get_user_by_username(db=db, username=username)
+    user = get_user_by_username_or_email(db=db, username=username)
     if not user:
         return False
     if not verify_password(password, user.hashed_password):
@@ -170,7 +198,7 @@ async def get_current_user(
 
 
 async def get_current_active_user(
-    current_user: Annotated[schemas.UserData, Depends(get_current_user)]
+        current_user: Annotated[schemas.UserData, Depends(get_current_user)]
 ):
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
@@ -179,7 +207,16 @@ async def get_current_active_user(
 
 def change_public_state(db: Session, game_id: int):
     state: bool = get_game_public_state(db=db, game_id=game_id)
-    state = invert(state)
+
+    games = db.query(models.Game)
+    data = {"public": False}
+    for game in games:
+        update_game(db=db, game_id=game.id, data=data)
+
+    if state:
+        state = False
+    else:
+        state = True
     data = {"public": state}
     return update_game(db=db, game_id=game_id, data=data)
 
@@ -188,4 +225,14 @@ def change_nb_games(db: Session, user: schemas.UserData):
     nb_games: int = user.played_games
     nb_games += 1
     data = {"played_games": nb_games}
+    return update_user(db=db, user_id=user.id, data=data)
+
+
+def disable_user(db: Session, user: schemas.UserData):
+    user: schemas.UserData = get_user_by_id(db=db, id=user.id)
+    if user.disabled:
+        state = False
+    else:
+        state = True
+    data = {"disabled": state}
     return update_user(db=db, user_id=user.id, data=data)

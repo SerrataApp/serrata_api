@@ -8,8 +8,6 @@ from sqlalchemy.orm import Session
 
 from datetime import timedelta
 from typing import Annotated
-import json
-
 
 from . import crud, models, schemas
 from .database import engine
@@ -17,7 +15,7 @@ from .get_db import get_db
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(docs_url=None, redoc_url=None)
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,11 +28,12 @@ app.add_middleware(
 database = r"bdd.db"
 
 
-@app.get("/users/me/", response_model=schemas.UserData, tags=["users"])
+@app.get("/users/me/", response_model=schemas.UserPersonalInfo, tags=["users"])
 async def read_users_me(
         current_user: Annotated[schemas.UserData, Depends(crud.get_current_active_user)]
 ):
     return current_user
+
 
 @app.get("/users/", response_model=schemas.UserData, tags=["users"])
 async def read_user(
@@ -43,6 +42,7 @@ async def read_user(
 ):
     user: schemas.UserData = crud.get_user_by_id(db=db, id=user_id)
     return user
+
 
 @app.delete("/users/me/", response_model=schemas.UserData, tags=["users"])
 def delete_user(
@@ -84,8 +84,8 @@ def modify_nb_games(
     return crud.change_nb_games(db=db, user=user)
 
 
-@app.post("/signup", response_model=schemas.UserData, tags=["users"])
-def signup_user(user: schemas.UserInDb, db: Session = Depends(get_db)):
+@app.post("/signup", response_model=schemas.UserPersonalInfo, tags=["users"])
+def signup_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     try:
         user: schemas.UserInDb = crud.create_user(db=db, user=user)
         return user
@@ -122,7 +122,7 @@ def get_game(
         db: Session = Depends(get_db)
 ):
     try:
-        #TODO verifier que l'id de la partie existe
+        # TODO verifier que l'id de la partie existe
         if game_id < 0:
             raise ResponseValidationError
         return crud.get_game(db=db, game_id=game_id)
@@ -224,5 +224,50 @@ def modify_game_state(
         game_id: int,
         db: Session = Depends(get_db)
 ):
-    # TODO verifier que la partie appartien bien a l'utilisateur
-    return crud.change_public_state(db=db, game_id=game_id)
+    game = crud.get_game(db=db, game_id=game_id)
+    if game.player_id == user.id:
+        return crud.change_public_state(db=db, game_id=game_id)
+    else:
+        if user.admin:
+            return crud.change_public_state(db=db, game_id=game_id)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Vous n'avez pas les droits pour changer l'état d'une partie!",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+# DASHBOARD ADMIN
+
+@app.put("/admindisable/", response_model=schemas.UserData, tags=["admin"])
+def disable_user(
+        user: Annotated[schemas.UserData, Depends(crud.get_current_user)],
+        user_id: int,
+        db: Session = Depends(get_db)
+):
+    if user.admin:
+        selected_user = crud.get_user_by_id(db=db, id=user_id)
+        if selected_user is not None:
+            return crud.disable_user(db=db, user=selected_user)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Vous n'avez pas les droits pour desactiver un utilisateur!",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+@app.get("/adminusers/", response_model=schemas.UserPersonalInfo, tags=["admin"])
+def get_user_by_admin(
+        user: Annotated[schemas.UserData, Depends(crud.get_current_user)],
+        user_id: int,
+        db: Session = Depends(get_db)
+):
+    if user.admin:
+        return crud.get_user_by_id(db=db, id=user_id)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Vous n'avez pas les droits pour récupérer les données d'un utilisateur!",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
