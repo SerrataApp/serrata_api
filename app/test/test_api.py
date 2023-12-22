@@ -145,7 +145,7 @@ def test_get_users_by_name():
     )
 
     assert response.status_code == 200
-    assert response_get_games.json()
+    assert response.json()
 
 
 def test_delete_game():
