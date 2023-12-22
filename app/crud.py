@@ -1,4 +1,4 @@
-from sqlalchemy import update, or_
+from sqlalchemy import update, or_, func
 from sqlalchemy.orm import Session
 
 from datetime import datetime, timedelta
@@ -41,6 +41,11 @@ def get_password_hash(password):
 def get_user_by_username(db: Session, username: str):
     user: schemas.UserData = db.query(models.User).filter(models.User.username == username).first()
     return user
+
+
+def get_users_by_username(db: Session, username: str, limit: int):
+    users: schemas.UserData = db.query(models.User).filter(func.lower(models.User.username).like(username.lower()+"%")).limit(limit).all()
+    return users
 
 
 def get_user_by_username_or_email(db: Session, username: str):

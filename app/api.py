@@ -115,6 +115,17 @@ def login_for_access_token(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+@app.get("/users/search/", tags=["users"])
+def search_users_by_name(
+        username: str,
+        limit: int,
+        db: Session = Depends(get_db)
+):
+    users = crud.get_users_by_username(db=db, username=username, limit=limit)
+    for i in range(len(users)):
+      users[i] = schemas.UserData(**users[i].__dict__)
+    return users
+
 
 @app.get("/score/", response_model=schemas.GameInDb, tags=["scores"])
 def get_game(
