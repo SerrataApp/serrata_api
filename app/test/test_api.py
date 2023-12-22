@@ -139,6 +139,15 @@ def test_get_games_by_user():
     assert response_get_games.json()
 
 
+def test_get_users_by_name():
+    response = client.get(
+      "/users/search/?username=t&limit=100"
+    )
+
+    assert response.status_code == 200
+    assert response_get_games.json()
+
+
 def test_delete_game():
     admin_response_token = client.post(
         "/token",
