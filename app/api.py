@@ -25,7 +25,7 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-database = r"bdd.db"
+database = r"sql_app.db"
 
 
 @app.get("/users/me/", response_model=schemas.UserPersonalInfo, tags=["users"])
