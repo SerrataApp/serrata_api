@@ -12,4 +12,4 @@ EXPOSE 8080
 
 LABEL authors="Tang0Ch4rlie"
 
-CMD ["uvicorn", "app.api:app", "--host", "127.0.0.1", "--port", "8080"]
+CMD ["uvicorn", "app.api:app", "--host", "0.0.0.0", "--port", "8080"]
